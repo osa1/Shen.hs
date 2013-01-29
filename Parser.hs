@@ -64,7 +64,7 @@ app = parens $ do
 unit = KL.tok TLParen >> KL.tok TRParen >> return Unit
 
 sexp :: KL.Parser Sexp
-sexp = choice [ try string, try num, try bool, try symbol, try lambda, try letexp, try defun, try app, try unit ]
+sexp = choice [ string, num, try bool, symbol, try lambda, try letexp, try defun, try app, unit ]
 
 parseText :: String -> IO ()
 parseText = parseTest (sexp <* KL.tok TEOF) . alexScanTokens'
