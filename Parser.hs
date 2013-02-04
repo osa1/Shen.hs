@@ -8,7 +8,7 @@ import Data.Maybe (fromMaybe)
 
 import Control.Applicative ((<*>), (<$>), (<*))
 
-newtype Symbol = Symbol String deriving Show
+type Symbol = String
 
 data Sexp
     = Sym Symbol
@@ -41,7 +41,7 @@ bool = do
 symbol' :: KL.Parser Symbol
 symbol' = do
     TSymbol s <- KL.symbol
-    return $ Symbol s
+    return s
 
 symbol = Sym <$> symbol'
 
