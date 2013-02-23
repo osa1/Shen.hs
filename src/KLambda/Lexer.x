@@ -15,11 +15,6 @@ $str         = \0-\255 # [ \" ]
 klambda :-
 
     $whitespace+              ;
-    "let"                     { mkTok Let }
-    "true"                    { \posn _ -> (Bool True, Right posn) }
-    "false"                   { \posn _ -> (Bool False, Right posn) }
-    "lambda"                  { mkTok Lambda }
-    "defun"                   { mkTok Defun }
     \" $str* \"               { \posn s -> (Str s, Right posn) }
     \(                        { \posn _ -> (LParen, Right posn) }
     \)                        { \posn _ -> (RParen, Right posn) }
@@ -30,8 +25,7 @@ klambda :-
 {
 
 data KlTok
-    = Str String | LParen | RParen | Symbol String | Number String
-    | Bool Bool | Lambda | Defun | Let | EOF
+    = Str String | LParen | RParen | Symbol String | Number String | EOF
     deriving (Show, Eq)
 
 type KlToken = (KlTok, Either EOFPn AlexPosn)

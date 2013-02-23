@@ -29,9 +29,8 @@ numE = do
     L.Number n <- KL.num
     return $ ENum (read n)
 
-boolE = do
-    L.Bool b <- KL.bool
-    return $ EBool b
+boolE = (KL.symbol "true"  >> return (EBool True))
+    <|> (KL.symbol "false" >> return (EBool False))
 
 symbol' :: KL.Parser String
 symbol' = do
@@ -41,11 +40,11 @@ symbol' = do
 symbolE = ESym <$> symbol'
 
 lambdaE = parens $ do
-  KL.tok L.Lambda
+  KL.symbol "lambda"
   ELambda <$> anySymbol <*> exp
 
 defunE = parens $ do
-    KL.tok L.Defun
+    KL.symbol "defun"
     name <- anySymbol
     args <- parens $ many anySymbol
     body <- exp
@@ -54,7 +53,7 @@ defunE = parens $ do
         mkLambda (a:as) body = ELambda a (mkLambda as body)
 
 letE = parens $ do
-  KL.tok L.Let
+  KL.symbol "let"
   name <- anySymbol
   val  <- exp
   body <- exp

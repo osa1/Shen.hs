@@ -22,7 +22,7 @@ satisfy f = tokenPrim show nextPos tokeq
 tok :: (Stream [KlToken] m KlToken) => KlTok -> ParsecT [KlToken] u m KlTok
 tok t = satisfy (\(t', _) -> t' == t) <?> show t
 
-string, num, anySymbol, bool :: Monad m => ParsecT [KlToken] u m KlTok
+string, num, anySymbol :: Monad m => ParsecT [KlToken] u m KlTok
 
 string = satisfy p <?> "string"
   where p (t, _) = case t of Str _ -> True
@@ -39,8 +39,4 @@ anySymbol = satisfy p <?> "symbol"
 symbol :: Monad m => String -> ParsecT [KlToken] u m KlTok
 symbol s = satisfy p <?> "symbol \"" ++ s ++ "\""
   where p (t, _) = case t of Symbol s' -> if s' == s then True else False
-                             _ -> False
-
-bool = satisfy p <?> "boolean"
-  where p (t, _) = case t of Bool _ -> True
                              _ -> False
