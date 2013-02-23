@@ -3,7 +3,7 @@
 
 module Text.Parsec.KLambda where
 
-import Lexer
+import KLambda.Lexer
 
 import Text.Parsec hiding (satisfy)
 
@@ -22,20 +22,25 @@ satisfy f = tokenPrim show nextPos tokeq
 tok :: (Stream [KlToken] m KlToken) => KlTok -> ParsecT [KlToken] u m KlTok
 tok t = satisfy (\(t', _) -> t' == t) <?> show t
 
-string, num, symbol, bool :: Monad m => ParsecT [KlToken] u m KlTok
+string, num, anySymbol, bool :: Monad m => ParsecT [KlToken] u m KlTok
 
 string = satisfy p <?> "string"
-  where p (t, _) = case t of TStr _ -> True
+  where p (t, _) = case t of Str _ -> True
                              _ -> False
 
 num = satisfy p <?> "number"
-  where p (t, _) = case t of TNumber _ -> True
+  where p (t, _) = case t of Number _ -> True
                              _ -> False
 
-symbol = satisfy p <?> "symbol"
-  where p (t, _) = case t of TSymbol _ -> True
+anySymbol = satisfy p <?> "symbol"
+  where p (t, _) = case t of Symbol _ -> True
+                             _ -> False
+
+symbol :: Monad m => String -> ParsecT [KlToken] u m KlTok
+symbol s = satisfy p <?> "symbol \"" ++ s ++ "\""
+  where p (t, _) = case t of Symbol s' -> if s' == s then True else False
                              _ -> False
 
 bool = satisfy p <?> "boolean"
-  where p (t, _) = case t of TBool _ -> True
+  where p (t, _) = case t of Bool _ -> True
                              _ -> False
