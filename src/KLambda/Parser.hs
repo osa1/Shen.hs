@@ -1,73 +1,74 @@
-{-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
-module Parser where
+module KLambda.Parser where
 
-import Lexer
+import qualified KLambda.Lexer as L
+import KLambda.Types
+
 import Text.Parsec hiding (string)
 import qualified Text.Parsec.KLambda as KL
-import Data.Maybe (fromMaybe)
 
 import Control.Applicative ((<*>), (<$>), (<*))
+import Data.Maybe (fromMaybe)
+import Control.Monad (void)
 
-type Symbol = String
-
-data Sexp
-    = Sym Symbol
-    | Bool Bool
-    | String String
-    | Number String
-    | Lambda Symbol Sexp
-    | Let Symbol Sexp Sexp
-    | Defun Symbol [Symbol] Sexp
-    | App Sexp [Sexp]
-    | Unit
-    deriving Show
+import Prelude hiding (exp)
 
 parens :: KL.Parser a -> KL.Parser a
-parens = between (KL.tok TLParen) (KL.tok TRParen)
+parens = between (KL.tok L.LParen) (KL.tok L.RParen)
 
-string, num, bool, symbol, lambda, letexp, defun, app, unit :: KL.Parser Sexp
-string = do
-    TStr s <- KL.string
-    return $ String s
-
-num = do
-    TNumber n <- KL.num
-    return $ Number n
-
-bool = do
-    TBool b <- KL.bool
-    return $ Bool b
-
-symbol' :: KL.Parser Symbol
-symbol' = do
-    TSymbol s <- KL.symbol
+anySymbol :: KL.Parser Symbol
+anySymbol = do
+    L.Symbol s <- KL.anySymbol
     return s
 
-symbol = Sym <$> symbol'
+stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, unitE :: KL.Parser Exp
+stringE = do
+    L.Str s <- KL.string
+    return $ EStr s
 
-lambda = parens $ do
-    KL.tok TLambda
-    arg <- symbol'
-    body <- sexp
-    return $ Lambda arg body
+numE = do
+    L.Number n <- KL.num
+    return $ ENum (read n)
 
-letexp = parens $ Let <$> (KL.tok TLet >> symbol') <*> sexp <*> sexp
+boolE = do
+    L.Bool b <- KL.bool
+    return $ EBool b
 
-defun = parens $
-  Defun <$> (KL.tok TDefun >> symbol') <*> parens (many symbol') <*> sexp
+symbol' :: KL.Parser String
+symbol' = do
+    L.Symbol s <- KL.anySymbol
+    return s
 
-app = parens $ do
-    fun <- sexp
-    args <- fromMaybe [] <$> (optionMaybe $ many1 sexp)
-    return $ App fun args
+symbolE = ESym <$> symbol'
 
-unit = KL.tok TLParen >> KL.tok TRParen >> return Unit
+lambdaE = parens $ do
+  KL.tok L.Lambda
+  ELambda <$> anySymbol <*> exp
 
-sexp :: KL.Parser Sexp
-sexp = choice [ string, num, try bool, symbol, try lambda, try letexp, try defun, try app, unit ]
+defunE = parens $ do
+    KL.tok L.Defun
+    name <- anySymbol
+    args <- parens $ many anySymbol
+    body <- exp
+    return $ EApp (ESym "set") [ESym name, mkLambda args body]
+  where mkLambda []     body = body
+        mkLambda (a:as) body = ELambda a (mkLambda as body)
+
+letE = parens $ do
+  KL.tok L.Let
+  name <- anySymbol
+  val  <- exp
+  body <- exp
+  return $ EApp (ELambda name body) [val]
+
+appE = parens $ EApp <$> exp <*> many exp
+
+unitE = KL.tok L.LParen >> KL.tok L.RParen >> return EUnit
+
+exp = choice
+  [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try appE, unitE ]
 
 parseText :: String -> IO ()
-parseText = parseTest (sexp <* KL.tok TEOF) . alexScanTokens'
+parseText = parseTest (many exp <* KL.tok L.EOF) . L.alexScanTokens'
 
 parseText' :: (Show a) => KL.Parser a -> String -> IO ()
-parseText' p = parseTest p . alexScanTokens'
+parseText' p = parseTest p . L.alexScanTokens'
