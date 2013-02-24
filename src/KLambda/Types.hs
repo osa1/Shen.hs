@@ -73,7 +73,7 @@ typeOf VBool{} = TyBool
 typeOf VStr{}  = TyStr
 typeOf VNum{}  = TyNum
 typeOf VList{} = TyList
-typeOf VFun{} = TyClos
+typeOf VFun{}  = TyClos
 
 ensureType :: Val -> Type -> Kl Val
 ensureType val ty
