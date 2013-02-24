@@ -48,7 +48,7 @@ defunE = parens $ do
     name <- anySymbol
     args <- parens $ many anySymbol
     body <- exp
-    return $ EApp (ESym "set") [ESym name, mkLambda args body]
+    return $ EApp (EApp (ESym "set") (ESym name)) (mkLambda args body)
   where mkLambda []     body = body
         mkLambda (a:as) body = ELambda a (mkLambda as body)
 
@@ -57,7 +57,7 @@ letE = parens $ do
   name <- anySymbol
   val  <- exp
   body <- exp
-  return $ EApp (ELambda name body) [val]
+  return $ EApp (ELambda name body) val
 
 appE = parens $ EApp <$> exp <*> many exp
 
