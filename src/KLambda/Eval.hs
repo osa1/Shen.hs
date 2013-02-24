@@ -13,8 +13,8 @@ import Prelude hiding (exp)
 evalKl :: Env -> Kl a -> IO (Either KlException a)
 evalKl env k = runErrorT $ evalStateT (runKl k) env
 
-evalWEnv :: Env -> Kl a -> Kl a
-evalWEnv env kl = Kl . lift $ evalStateT (runKl kl) env
+evalWEnv :: Env -> Exp -> Kl Val
+evalWEnv env exp = Kl . lift $ evalStateT (runKl $ eval exp) env
 
 ensureType' :: Exp -> Type -> Kl Val
 ensureType' exp ty = do
@@ -34,7 +34,7 @@ value exps = do
     [e1]   <- ensureArity 1 exps
     v1     <- eval e1
     VSym s <- ensureType v1 TySym
-    env    <- get
+    env    <- gets symEnv
     return $ fromJust (M.lookup s env)
 
 set' :: [Exp] -> Kl Val
@@ -43,7 +43,7 @@ set' exps = do
     v1       <- eval e1
     VSym s   <- ensureType v1 TySym
     v2       <- eval e2
-    modify $ \m -> M.insert s v2 m
+    modify $ \m -> insertSymEnv s v2 m
     return v2
 
 apply :: Func -> [Exp] -> Kl Val
@@ -51,8 +51,9 @@ apply f [] = do
     return $ VFun f
 
 apply (Closure env arg body) [a] = do
-    av <- eval a
-    evalWEnv (M.insert arg av env) (eval body)
+    av   <- eval a
+    let env' = insertSymEnv arg av env
+    evalWEnv env' body
 
 apply c (a:as) = do
     f <- apply c [a]
