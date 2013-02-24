@@ -24,28 +24,6 @@ ensureType' exp ty = do
       then return v1
       else throwError $ TypeError { foundTy = t, expectedTy = ty }
 
-intern :: Val -> Kl Val
-intern v = do
-    VStr s <- ensureType v TyStr
-    return $ VSym s
-
-value :: [Exp] -> Kl Val
-value exps = do
-    [e1]   <- ensureArity 1 exps
-    v1     <- eval e1
-    VSym s <- ensureType v1 TySym
-    env    <- gets symEnv
-    return $ fromJust (M.lookup s env)
-
-set' :: [Exp] -> Kl Val
-set' exps = do
-    [e1, e2] <- ensureArity 2 exps
-    v1       <- eval e1
-    VSym s   <- ensureType v1 TySym
-    v2       <- eval e2
-    modify $ \m -> insertSymEnv s v2 m
-    return v2
-
 apply :: Func -> [Exp] -> Kl Val
 apply f [] = do
     return $ VFun f
@@ -70,10 +48,13 @@ eval EUnit     = return $ VList []
 eval (ELambda param body) = do
     env <- get
     return $ VFun (Closure env param body)
+eval (EApp (ESym s) args) = do
+    fenv <- gets funEnv
+    case fromJust (M.lookup s fenv) of
+      VFun f -> apply f args
+      _ -> error "can't apply a non-function value"
 eval (EApp exp args) = do
     f <- eval exp
     case f of
-      VSym "value"  -> value args
-      VSym "set"    -> set'  args
-      VFun l        -> apply l args
+      VFun f' -> apply f' args
       _ -> error "can't apply a non function value"

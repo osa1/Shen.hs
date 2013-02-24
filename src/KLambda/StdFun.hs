@@ -3,6 +3,9 @@
 module KLambda.StdFun where
 
 import qualified Data.HashMap.Strict as M
+import Control.Monad.State (modify, gets)
+import Control.Monad.Error (throwError)
+import Data.Maybe (fromJust)
 
 import KLambda.Types
 import KLambda.Eval
@@ -75,7 +78,7 @@ consp = klEnsureType TyList
 -- Arithmetic
 -- --------------------------------------------------------
 
-mkArithFun :: forall a.  KlVal a => (Number -> Number -> a) -> [Exp] -> Kl Val
+mkArithFun :: forall a. KlVal a => (Number -> Number -> a) -> [Exp] -> Kl Val
 mkArithFun op exps = do
     [e1, e2] <- ensureArity 2 exps
     VNum n1  <- ensureType' e1 TyNum
@@ -84,6 +87,36 @@ mkArithFun op exps = do
 
 numberp :: [Exp] -> Kl Val
 numberp = klEnsureType TyNum
+
+-- Assignments
+-- --------------------------------------------------------
+
+set' :: [Exp] -> Kl Val
+set' exps = do
+    [e1, e2] <- ensureArity 2 exps
+    case e1 of
+      ESym s -> do
+        v2 <- eval e2
+        modify $ \env -> insertSymEnv s v2 env
+        return v2
+      _ -> throwError $ ErrMsg "set to a non-symbol expression"
+
+value :: [Exp] -> Kl Val
+value exps = do
+    [e1]   <- ensureArity 1 exps
+    VSym s <- ensureType' e1 TySym
+    senv   <- gets symEnv
+    return $ fromJust (M.lookup s senv)
+
+-- Symbols
+-- --------------------------------------------------------
+
+intern :: [Exp] -> Kl Val
+intern exps = do
+    [e1]   <- ensureArity 1 exps
+    VStr s <- ensureType' e1 TyStr
+    return $ VSym s
+
 
 -- Standard environment
 -- --------------------------------------------------------
@@ -110,4 +143,7 @@ stdEnv = M.fromList
   , ("<=", mkArithFun (<=))
   , (">=", mkArithFun (>=))
   , ("number?", numberp)
+  , ("set", set')
+  , ("value", value)
+  , ("intern", intern)
   ]
