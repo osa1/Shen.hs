@@ -14,9 +14,7 @@ import KLambda.Env
 klEnsureType :: Type -> Func
 klEnsureType ty = StdFun $ \e -> do
   v1 <- eval e
-  return . klVal $ if typeOf v1 == ty
-                     then True
-                     else False
+  return . klVal $ typeOf v1 == ty
 
 instance KlFun Func where
     apply (Closure env argName body) arg = do
@@ -33,7 +31,7 @@ instance KlFun (Kl Val) where
           fenv <- gets fst
           apply (fromJust $ M.lookup s fenv) arg
         inv ->
-          throwError $ TypeError { expectedTy = TyFun, foundTy = typeOf inv }
+          throwError TypeError{ expectedTy = TyFun, foundTy = typeOf inv }
 
 instance KlVal (Exp -> Kl Val) where klVal = VFun . StdFun
 
@@ -44,7 +42,7 @@ pos, tlstr, cn, str, strp, nToStr, strToN :: Func
 pos = StdFun $ \e1 e2 -> do
   s             <- ensureType =<< eval e1
   (n :: Double) <- ensureType =<< eval e2
-  return $ VStr [s !! (floor n)]
+  return $ VStr [s !! floor n]
 
 tlstr = StdFun $ \e -> do
   s <- ensureType =<< eval e

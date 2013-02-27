@@ -44,37 +44,37 @@ class EnsureType a b where
 instance EnsureType Val [Char] where
     ensureType (VStr s) = return s
     ensureType notStr   =
-      throwError $ TypeError { foundTy = typeOf notStr, expectedTy = TyStr }
+      throwError TypeError{ foundTy = typeOf notStr, expectedTy = TyStr }
 
 instance EnsureType Val Bool where
     ensureType (VBool b) = return b
     ensureType notBool   =
-      throwError $ TypeError { foundTy = typeOf notBool, expectedTy = TyBool }
+      throwError TypeError{ foundTy = typeOf notBool, expectedTy = TyBool }
 
 instance EnsureType Val [Val] where
     ensureType (VList l) = return l
     ensureType notList =
-      throwError $ TypeError { foundTy = typeOf notList, expectedTy = TyList }
+      throwError TypeError{ foundTy = typeOf notList, expectedTy = TyList }
 
 instance EnsureType Val Double where
     ensureType (VNum n) = return n
     ensureType notNum   =
-      throwError $ TypeError { foundTy = typeOf notNum, expectedTy = TyNum }
+      throwError TypeError{ foundTy = typeOf notNum, expectedTy = TyNum }
 
 instance EnsureType Val Int where
     ensureType (VNum n) = return $ floor n
     ensureType notNum   =
-      throwError $ TypeError { foundTy = typeOf notNum, expectedTy = TyNum }
+      throwError TypeError{ foundTy = typeOf notNum, expectedTy = TyNum }
 
 instance EnsureType Val Func where
     ensureType (VFun f) = return f
     ensureType notFun   =
-      throwError $ TypeError { foundTy = typeOf notFun, expectedTy = TyFun }
+      throwError TypeError{ foundTy = typeOf notFun, expectedTy = TyFun }
 
 instance EnsureType Val Symbol where
-    ensureType (VSym s) = return $ s
+    ensureType (VSym s) = return s
     ensureType notSym =
-      throwError $ TypeError { foundTy = typeOf notSym, expectedTy = TySym }
+      throwError TypeError{ foundTy = typeOf notSym, expectedTy = TySym }
 
 class KlVal a where
     klVal :: a -> Val
@@ -125,4 +125,4 @@ typeOf VFun{}  = TyClos
 ensureArity :: Int -> [a] -> Kl [a]
 ensureArity n l
   | n == length l = return l
-  | otherwise     = throwError $ ArityMismatch { foundAr = length l, expectedAr = n }
+  | otherwise     = throwError ArityMismatch{ foundAr = length l, expectedAr = n }

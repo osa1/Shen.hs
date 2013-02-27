@@ -30,4 +30,4 @@ eval (EIf guard then_ else_) = do
       VBool True  -> eval then_
       VBool False -> eval else_
       notBool ->
-        throwError $ TypeError { foundTy = typeOf notBool, expectedTy = TyBool }
+        throwError TypeError{ foundTy = typeOf notBool, expectedTy = TyBool }
