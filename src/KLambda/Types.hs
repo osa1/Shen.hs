@@ -16,11 +16,11 @@ data Exp
     | EBool Bool
     | EStr  String
     | ENum  Number
-
     | EApp Exp Exp
     | ELambda Symbol Exp
     | EUnit
     | EIf Exp Exp Exp -- guard, then case, else case
+    | EDefun Symbol Exp
     deriving Show
 
 data Val

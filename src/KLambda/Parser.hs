@@ -45,10 +45,10 @@ lambdaE = parens $ do
 
 defunE = parens $ do
     KL.symbol "defun"
-    Symbol name <- anySymbol
+    name <- anySymbol
     args <- parens $ many anySymbol
     body <- exp
-    return $ EApp (EApp (ESym "set") (ESym name)) (mkLambda args body)
+    return $ EDefun name (mkLambda args body)
   where mkLambda []     body = body
         mkLambda (a:as) body = ELambda a (mkLambda as body)
 
