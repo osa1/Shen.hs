@@ -1,5 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall #-}
-{-# LANGUAGE Rank2Types, ScopedTypeVariables, FlexibleInstances, FlexibleContexts #-}
 module KLambda.StdFun where
 
 import qualified Data.HashMap.Strict as M
