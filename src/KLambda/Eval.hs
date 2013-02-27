@@ -18,19 +18,6 @@ instance KlFun Func where
       evalWEnv (insertSymEnv argName arg' env) body
     apply (StdFun f) arg = apply f arg
 
-instance KlFun (Kl Val) where
-    apply v arg = do
-      v' <- v
-      case v' of
-        VFun f -> apply f arg
-        VSym (Symbol s) -> do
-          fenv <- gets fst
-          apply (fromJust $ M.lookup s fenv) arg
-        inv ->
-          throwError TypeError{ expectedTy = TyFun, foundTy = typeOf inv }
-
-instance KlVal (Exp -> Kl Val) where klVal = VFun . StdFun
-
 evalKl :: Env -> Exp -> IO (Either KlException Val)
 evalKl env exp = runErrorT $ evalStateT (runKl $ eval exp) env
 
@@ -53,4 +40,13 @@ eval (EIf guard then_ else_) = do
       VBool False -> eval else_
       notBool ->
         throwError TypeError{ foundTy = typeOf notBool, expectedTy = TyBool }
-eval (EApp e1 e2) = apply (eval e1) e2
+eval (EApp e1 e2) = do
+    v1 <- eval e1
+    case v1 of
+      VSym s -> do
+        f' <- lookupFun' s
+        case f' of
+          Nothing -> error ""
+          Just f -> apply f e2
+      VFun f -> apply f e2
+      notFun -> throwError TypeError{ foundTy = typeOf notFun, expectedTy = TyFun }

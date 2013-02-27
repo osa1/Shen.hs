@@ -57,8 +57,10 @@ newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
 class KlFun a where
     apply :: a -> Exp -> Kl Val
 
-instance (KlFun f) => KlFun (Exp -> f) where
-    apply f e = return (VFun $ StdFun $ f e)
+instance KlFun (Exp -> Kl Val) where
+    apply f e = f e
+instance KlFun (Exp -> Exp -> Kl Val) where
+    apply f e = return (VFun . StdFun $ f e)
 
 data Func = Closure Env Symbol Exp
           | forall f. (KlFun f) => StdFun f
