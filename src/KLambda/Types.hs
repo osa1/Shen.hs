@@ -76,6 +76,7 @@ data Exp
     | EApp Exp [Exp]
     | ELambda Symbol Exp
     | EUnit
+    | ECond [(Exp, Exp)]
     deriving Show
 
 typeOf :: Val -> Type
