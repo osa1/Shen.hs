@@ -3,6 +3,7 @@
 module KLambda.Types where
 
 import qualified Data.HashMap.Strict as M
+import qualified Data.Vector.Mutable as MV
 
 import Control.Monad.Error
 import Control.Monad.State
@@ -30,7 +31,12 @@ data Val
     | VNum Number
     | VList [Val]
     | VFun Func
+        -- TODO: Implement Unbox instance and use unboxed vectors
+    | VVec (MV.IOVector Val)
     deriving Show
+
+instance Show (MV.IOVector Val) where
+    show _ = "Vector" -- TODO:
 
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc
@@ -63,6 +69,8 @@ instance KlFun (Val -> Kl Val) where
     apply f e = f e
 instance KlFun (Val -> Val -> Kl Val) where
     apply f e = return (VFun . StdFun $ f e)
+instance KlFun (Val -> Val -> Val -> Kl Val) where
+    apply f e = return (VFun . StdFun $ f e)
 
 data Func = Closure LexEnv Symbol Exp
           | forall f. (KlFun f) => StdFun f
@@ -76,6 +84,7 @@ typeOf VStr{}  = TyStr
 typeOf VNum{}  = TyNum
 typeOf VList{} = TyList
 typeOf VFun{}  = TyClos
+typeOf VVec{}  = TyVec
 
 class EnsureType a where
     ensureType :: Val -> Kl a
@@ -115,6 +124,11 @@ instance EnsureType Symbol where
     ensureType notSym =
       throwError TypeError{ foundTy = typeOf notSym, expectedTy = TySym }
 
+instance EnsureType (MV.IOVector Val) where
+    ensureType (VVec v) = return v
+    ensureType notVec =
+      throwError TypeError{ foundTy = typeOf notVec, expectedTy = TyVec }
+
 class KlVal a where
     klVal :: a -> Val
 
@@ -124,4 +138,5 @@ instance KlVal Bool   where klVal = VBool
 instance KlVal Char   where klVal = VStr . (:[])
 instance KlVal Double where klVal = VNum
 instance KlVal Symbol where klVal = VSym
+instance KlVal (MV.IOVector Val) where klVal = VVec
 instance KlVal a => KlVal [a]  where klVal a = VList $ map klVal a

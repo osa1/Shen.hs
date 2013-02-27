@@ -3,6 +3,8 @@
 module KLambda.Fun where
 
 import qualified Data.HashMap.Strict as M
+import qualified Data.Vector.Mutable as MV
+import Control.Monad.IO.Class (liftIO)
 import Control.Monad.State (modify, gets)
 import Data.Maybe (fromJust)
 
@@ -95,6 +97,31 @@ intern = StdFun $ \v -> do
   s <- ensureType v
   return $ VSym s
 
+-- Vectors
+-- --------------------------------------------------------
+
+absvector, vecAssign, vecRead, vectorp :: Func
+absvector = StdFun $ \v -> do
+  n   <- ensureType v
+  vec <- liftIO $ MV.new n
+  return $ VVec vec
+
+vecAssign = StdFun $ \vec idx (val :: Val) -> do
+  vec' <- ensureType vec
+  idx' <- ensureType idx
+  -- TODO: can we assume that Shen implementation in KLambda already does
+  -- the bound checking? if so we can use `unsafeWrite`.
+  liftIO $ MV.write vec' idx' val
+  return vec
+
+vecRead = StdFun $ \vec idx -> do
+  vec' <- ensureType vec
+  idx' <- ensureType idx
+  -- TODO: same situation with `vecAssign`. `unsafeRead` can be used.
+  liftIO (MV.read vec' idx' :: IO Val)
+
+vectorp = klEnsureType TyVec
+
 -- Standard environment
 -- --------------------------------------------------------
 
@@ -123,4 +150,8 @@ stdenv = M.fromList
   , ("set", set')
   , ("value", value)
   , ("intern", intern)
+  , ("absvector", absvector)
+  , ("address->", vecAssign)
+  , ("<-address", vecRead)
+  , ("absvector?", vectorp)
   ]
