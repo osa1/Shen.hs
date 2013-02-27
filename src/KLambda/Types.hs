@@ -8,7 +8,7 @@ import Control.Monad.State
 import Control.Applicative
 
 type Number = Double
-type Symbol = String
+newtype Symbol = Symbol String deriving Show
 
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc
@@ -23,25 +23,13 @@ data KlException
 instance Error KlException where
     strMsg = ErrMsg
 
-type SymEnv = M.HashMap Symbol Val
-type FunEnv = M.HashMap Symbol Func
+type SymEnv = M.HashMap String Val
+type FunEnv = M.HashMap String Func
 
 type Env = (FunEnv, SymEnv)
 
-funEnv :: Env -> FunEnv
-funEnv = fst
-
-symEnv :: Env -> SymEnv
-symEnv = snd
-
-insertSymEnv :: Symbol -> Val -> Env -> Env
-insertSymEnv s v (fe, se) = (fe, M.insert s v se)
-
-insertFunEnv :: Symbol -> Func -> Env -> Env
-insertFunEnv s f (fe, se) = (M.insert s f fe, se)
-
 data Val
-    = VSym String
+    = VSym Symbol
     | VBool Bool
     | VStr String
     | VNum Number
