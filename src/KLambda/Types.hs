@@ -84,6 +84,7 @@ instance KlVal Int    where klVal = VNum . fromIntegral
 instance KlVal Bool   where klVal = VBool
 instance KlVal Char   where klVal = VStr . (:[])
 instance KlVal Double where klVal = VNum
+instance KlVal Symbol where klVal = VSym
 instance KlVal a => KlVal [a]  where klVal a = VList $ map klVal a
 
 newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
