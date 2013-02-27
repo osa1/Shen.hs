@@ -1,6 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall #-}
-module KLambda.StdFun where
+module KLambda.Fun where
 
 import qualified Data.HashMap.Strict as M
 import Control.Monad.State (modify, gets)
@@ -109,8 +109,8 @@ set' = StdFun $ \e1 e2 -> do
   return v
 
 value = StdFun $ \e -> do
-  s      <- ensureType =<< eval e
-  senv   <- gets symEnv
+  s    <- ensureType =<< eval e
+  senv <- gets symEnv
   return $ fromJust (M.lookup s senv)
 
 -- Symbols
