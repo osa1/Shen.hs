@@ -17,7 +17,7 @@ parens = between (KL.tok L.LParen) (KL.tok L.RParen)
 anySymbol :: KL.Parser Symbol
 anySymbol = do
     L.Symbol s <- KL.anySymbol
-    return s
+    return (Symbol s)
 
 stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, unitE,
   condE, ifE, exp :: KL.Parser Exp
@@ -45,7 +45,7 @@ lambdaE = parens $ do
 
 defunE = parens $ do
     KL.symbol "defun"
-    name <- anySymbol
+    Symbol name <- anySymbol
     args <- parens $ many anySymbol
     body <- exp
     return $ EApp (EApp (ESym "set") (ESym name)) (mkLambda args body)
