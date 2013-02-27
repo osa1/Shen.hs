@@ -11,6 +11,27 @@ import Control.Applicative
 type Number = Double
 newtype Symbol = Symbol String deriving Show
 
+data Exp
+    = ESym  String
+    | EBool Bool
+    | EStr  String
+    | ENum  Number
+
+    | EApp Exp Exp
+    | ELambda Symbol Exp
+    | EUnit
+    | EIf Exp Exp Exp -- guard, then case, else case
+    deriving Show
+
+data Val
+    = VSym Symbol
+    | VBool Bool
+    | VStr String
+    | VNum Number
+    | VList [Val]
+    | VFun Func
+    deriving Show
+
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc
     | TyVec | TyFun | TyList | TyTuple | TyClos | TyCont
@@ -29,14 +50,28 @@ type FunEnv = M.HashMap String Func
 
 type Env = (FunEnv, SymEnv)
 
-data Val
-    = VSym Symbol
-    | VBool Bool
-    | VStr String
-    | VNum Number
-    | VList [Val]
-    | VFun Func
-    deriving Show
+newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
+    deriving ( Functor, Applicative, Monad, MonadState Env
+             , MonadIO, MonadError KlException )
+
+class KlFun a where
+    apply :: a -> Exp -> Kl Val
+
+instance (KlFun f) => KlFun (Exp -> f) where
+    apply f e = return (VFun $ StdFun $ f e)
+
+data Func = Closure Env Symbol Exp
+          | forall f. (KlFun f) => StdFun f
+
+instance Show Func where show _ = "func"
+
+typeOf :: Val -> Type
+typeOf VSym{}  = TySym
+typeOf VBool{} = TyBool
+typeOf VStr{}  = TyStr
+typeOf VNum{}  = TyNum
+typeOf VList{} = TyList
+typeOf VFun{}  = TyClos
 
 class EnsureType a b where
     ensureType :: a -> Kl b
@@ -86,38 +121,3 @@ instance KlVal Char   where klVal = VStr . (:[])
 instance KlVal Double where klVal = VNum
 instance KlVal Symbol where klVal = VSym
 instance KlVal a => KlVal [a]  where klVal a = VList $ map klVal a
-
-newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
-    deriving ( Functor, Applicative, Monad, MonadState Env
-             , MonadIO, MonadError KlException )
-
-class KlFun a where
-    apply :: a -> Exp -> Kl Val
-
-instance (KlFun f) => KlFun (Exp -> f) where
-    apply f e = return (VFun $ StdFun $ f e)
-
-data Func = Closure Env Symbol Exp
-          | forall f. (KlFun f) => StdFun f
-
-instance Show Func where show _ = "func"
-
-data Exp
-    = ESym  String
-    | EBool Bool
-    | EStr  String
-    | ENum  Number
-
-    | EApp Exp Exp
-    | ELambda Symbol Exp
-    | EUnit
-    | EIf Exp Exp Exp -- guard, then case, else case
-    deriving Show
-
-typeOf :: Val -> Type
-typeOf VSym{}  = TySym
-typeOf VBool{} = TyBool
-typeOf VStr{}  = TyStr
-typeOf VNum{}  = TyNum
-typeOf VList{} = TyList
-typeOf VFun{}  = TyClos
