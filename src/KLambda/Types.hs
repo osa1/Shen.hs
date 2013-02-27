@@ -41,6 +41,7 @@ data KlException
     = TypeError     { foundTy :: Type, expectedTy :: Type }
     | ArityMismatch { foundAr :: Int, expectedAr :: Int }
     | ErrMsg String
+    deriving Show
 
 instance Error KlException where
     strMsg = ErrMsg

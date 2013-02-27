@@ -102,8 +102,8 @@ intern = StdFun $ \e -> do
 -- Standard environment
 -- --------------------------------------------------------
 
-stdEnv :: M.HashMap String Func
-stdEnv = M.fromList
+stdenv :: M.HashMap String Func
+stdenv = M.fromList
   [ ("pos", pos)
   , ("tlstr", tlstr)
   , ("cn", cn)
