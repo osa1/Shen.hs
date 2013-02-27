@@ -121,8 +121,3 @@ typeOf VStr{}  = TyStr
 typeOf VNum{}  = TyNum
 typeOf VList{} = TyList
 typeOf VFun{}  = TyClos
-
-ensureArity :: Int -> [a] -> Kl [a]
-ensureArity n l
-  | n == length l = return l
-  | otherwise     = throwError ArityMismatch{ foundAr = length l, expectedAr = n }
