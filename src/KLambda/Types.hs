@@ -80,7 +80,7 @@ data Exp
     | EApp Exp Exp
     | ELambda Symbol Exp
     | EUnit
-    | ECond [(Exp, Exp)]
+    | EIf Exp Exp Exp -- guard, then case, else case
     deriving Show
 
 typeOf :: Val -> Type

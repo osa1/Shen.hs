@@ -20,7 +20,8 @@ anySymbol = do
     L.Symbol s <- KL.anySymbol
     return s
 
-stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, unitE, condE :: KL.Parser Exp
+stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, unitE,
+  condE, ifE, exp :: KL.Parser Exp
 stringE = do
     L.Str s <- KL.string
     return $ EStr s
@@ -65,13 +66,18 @@ appE = parens $ mkApp <$> exp <*> many exp
 
 unitE = KL.tok L.LParen >> KL.tok L.RParen >> return EUnit
 
-condE = parens $ do
-    KL.symbol "cond"
-    ECond <$> many case_
+condE = parens $ KL.symbol "cond" >> mkIf <$> many case_
   where case_ = parens $ (,) <$> exp <*> exp
+        mkIf [(g, b)]    = EIf g b EUnit
+        mkIf ((g, b):cs) = EIf g b (mkIf cs)
+
+ifE = parens $ do
+  KL.symbol "if"
+  EIf <$> exp <*> exp <*> exp
 
 exp = choice
-  [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE, try appE, unitE ]
+  [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE
+  , try ifE, try appE, unitE ]
 
 parseText :: String -> IO ()
 parseText = parseTest (many exp <* KL.tok L.EOF) . L.alexScanTokens'
