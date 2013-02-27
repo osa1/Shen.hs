@@ -1,3 +1,4 @@
+{-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
 module KLambda.Parser where
 
 import qualified KLambda.Lexer as L
@@ -7,8 +8,6 @@ import Text.Parsec hiding (string)
 import qualified Text.Parsec.KLambda as KL
 
 import Control.Applicative ((<*>), (<$>), (<*))
-import Data.Maybe (fromMaybe)
-import Control.Monad (void)
 
 import Prelude hiding (exp)
 
