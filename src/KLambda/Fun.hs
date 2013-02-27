@@ -1,10 +1,9 @@
-{-# LANGUAGE ScopedTypeVariables, FlexibleInstances #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Fun where
 
 import qualified Data.HashMap.Strict as M
 import Control.Monad.State (modify, gets)
-import Control.Monad.Error (throwError)
 import Data.Maybe (fromJust)
 
 import KLambda.Types
@@ -15,25 +14,6 @@ klEnsureType :: Type -> Func
 klEnsureType ty = StdFun $ \e -> do
   v1 <- eval e
   return . klVal $ typeOf v1 == ty
-
-instance KlFun Func where
-    apply (Closure env argName body) arg = do
-      arg' <- eval arg
-      evalWEnv (insertSymEnv argName arg' env) body
-    apply (StdFun f) arg = apply f arg
-
-instance KlFun (Kl Val) where
-    apply v arg = do
-      v' <- v
-      case v' of
-        VFun f -> apply f arg
-        VSym (Symbol s) -> do
-          fenv <- gets fst
-          apply (fromJust $ M.lookup s fenv) arg
-        inv ->
-          throwError TypeError{ expectedTy = TyFun, foundTy = typeOf inv }
-
-instance KlVal (Exp -> Kl Val) where klVal = VFun . StdFun
 
 -- String operations
 -- --------------------------------------------------------
