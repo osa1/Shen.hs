@@ -30,3 +30,9 @@ lookupSym' s = liftM (lookupSym s) get
 
 lookupFun' :: Symbol -> Kl (Maybe Func)
 lookupFun' s = liftM (lookupFun s) get
+
+insert :: String -> Val -> LexEnv -> LexEnv
+insert = M.insert
+
+lookup :: String -> LexEnv -> Maybe Val
+lookup = M.lookup

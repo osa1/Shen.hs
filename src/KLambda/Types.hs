@@ -48,6 +48,7 @@ instance Error KlException where
 
 type SymEnv = M.HashMap String Val
 type FunEnv = M.HashMap String Func
+type LexEnv = M.HashMap String Val
 
 type Env = (FunEnv, SymEnv)
 
