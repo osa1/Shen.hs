@@ -77,7 +77,7 @@ data Exp
     | EStr  String
     | ENum  Number
 
-    | EApp Exp [Exp]
+    | EApp Exp Exp
     | ELambda Symbol Exp
     | EUnit
     | ECond [(Exp, Exp)]

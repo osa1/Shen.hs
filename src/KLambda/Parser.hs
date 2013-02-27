@@ -59,7 +59,9 @@ letE = parens $ do
   body <- exp
   return $ EApp (ELambda name body) val
 
-appE = parens $ EApp <$> exp <*> many exp
+appE = parens $ mkApp <$> exp <*> many exp
+  where mkApp f [] = f
+        mkApp f (a:as) = mkApp (EApp f a) as
 
 unitE = KL.tok L.LParen >> KL.tok L.RParen >> return EUnit
 
