@@ -23,17 +23,21 @@ data KlException
 instance Error KlException where
     strMsg = ErrMsg
 
-type SymbolEnv = M.HashMap Symbol Val
+type SymEnv = M.HashMap Symbol Val
+type FunEnv = M.HashMap Symbol Func
 
-type Env = (SymbolEnv, SymbolEnv) -- fun env, symbol env
-funEnv, symEnv :: Env -> M.HashMap Symbol Val
+type Env = (FunEnv, SymEnv)
+
+funEnv :: Env -> FunEnv
 funEnv = fst
+
+symEnv :: Env -> SymEnv
 symEnv = snd
 
 insertSymEnv :: Symbol -> Val -> Env -> Env
 insertSymEnv s v (fe, se) = (fe, M.insert s v se)
 
-insertFunEnv :: Symbol -> Val -> Env -> Env
+insertFunEnv :: Symbol -> Func -> Env -> Env
 insertFunEnv s f (fe, se) = (M.insert s f fe, se)
 
 data Val
