@@ -7,59 +7,56 @@ import Control.Monad.State (modify, gets)
 import Data.Maybe (fromJust)
 
 import KLambda.Types
-import KLambda.Eval
 import KLambda.Env
 
+returnKl :: a -> Kl a
+returnKl = return
+
 klEnsureType :: Type -> Func
-klEnsureType ty = StdFun $ \e -> do
-  v1 <- eval e
-  return . klVal $ typeOf v1 == ty
+klEnsureType ty = StdFun $ \v -> returnKl . klVal $ typeOf v == ty
 
 -- String operations
 -- --------------------------------------------------------
 
 pos, tlstr, cn, str, strp, nToStr, strToN :: Func
-pos = StdFun $ \e1 e2 -> do
-  s             <- ensureType =<< eval e1
-  (n :: Double) <- ensureType =<< eval e2
+pos = StdFun $ \v1 v2 -> do
+  s             <- ensureType v1
+  (n :: Double) <- ensureType v2
   return $ VStr [s !! floor n]
 
-tlstr = StdFun $ \e -> do
-  s <- ensureType =<< eval e
+tlstr = StdFun $ \v -> do
+  s <- ensureType v
   return $ VStr (tail s)
 
-cn = StdFun $ \e1 e2 -> do
-  s1 <- ensureType =<< eval e1
-  s2 <- ensureType =<< eval e2
+cn = StdFun $ \v1 v2 -> do
+  s1 <- ensureType v1
+  s2 <- ensureType v2
   return $ VStr (s1 ++ s2)
 
-str = StdFun $ \e -> do
-  v <- eval e
-  return $ VStr (show v)
+str = StdFun $ \(v :: Val) -> returnKl $ klVal (show v)
 
 strp = klEnsureType TyStr
 
 nToStr = str
 
-strToN = StdFun $ \e -> do
-  n <- ensureType =<< eval e
+strToN = StdFun $ \v -> do
+  n <- ensureType v
   return $ VNum (read n)
 
 -- Lists
 -- --------------------------------------------------------
 
 cons, hd, tl, consp :: Func
-cons = StdFun $ \e1 e2 -> do
-  vl <- eval e1
-  l  <- ensureType =<< eval e2
-  return $ klVal (vl:l)
+cons = StdFun $ \(v1 :: Val) v2 -> do
+  l  <- ensureType v2
+  return $ klVal (v1:l)
 
-hd = StdFun $ \e -> do
-  (l :: [Val]) <- ensureType =<< eval e
+hd = StdFun $ \v -> do
+  (l :: [Val]) <- ensureType v
   return $ head l
 
-tl = StdFun $ \e -> do
-  (l :: [Val]) <- ensureType =<< eval e
+tl = StdFun $ \v -> do
+  (l :: [Val]) <- ensureType v
   return $ klVal (tail l)
 
 consp = klEnsureType TyList
@@ -68,9 +65,9 @@ consp = klEnsureType TyList
 -- --------------------------------------------------------
 
 mkArithFun :: forall a. KlVal a => (Double -> Double -> a) -> Func
-mkArithFun op = StdFun $ \e1 e2 -> do
-  n1 <- ensureType =<< eval e1
-  n2 <- ensureType =<< eval e2
+mkArithFun op = StdFun $ \v1 v2 -> do
+  n1 <- ensureType v1
+  n2 <- ensureType v2
   return $ klVal (n1 `op` n2)
 
 numberp :: Func
@@ -80,14 +77,13 @@ numberp = klEnsureType TyNum
 -- --------------------------------------------------------
 
 set', value :: Func
-set' = StdFun $ \e1 e2 -> do
-  s <- ensureType =<< eval e1
-  v <- eval e2
-  modify $ \env -> insertSymEnv s v env
-  return v
+set' = StdFun $ \v1 v2 -> do
+  s <- ensureType v1
+  modify $ \env -> insertSymEnv s v2 env
+  return v2
 
-value = StdFun $ \e -> do
-  s    <- ensureType =<< eval e
+value = StdFun $ \v -> do
+  s    <- ensureType v
   senv <- gets symEnv
   return $ fromJust (M.lookup s senv)
 
@@ -95,8 +91,8 @@ value = StdFun $ \e -> do
 -- --------------------------------------------------------
 
 intern :: Func
-intern = StdFun $ \e -> do
-  s <- ensureType =<< eval e
+intern = StdFun $ \v -> do
+  s <- ensureType v
   return $ VSym s
 
 -- Standard environment

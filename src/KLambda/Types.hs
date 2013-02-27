@@ -1,4 +1,4 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, FlexibleInstances, MultiParamTypeClasses, ExistentialQuantification #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving, FlexibleInstances, ExistentialQuantification #-}
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Types where
 
@@ -57,14 +57,14 @@ newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
              , MonadIO, MonadError KlException )
 
 class KlFun a where
-    apply :: a -> Exp -> Kl Val
+    apply :: a -> Val -> Kl Val
 
-instance KlFun (Exp -> Kl Val) where
+instance KlFun (Val -> Kl Val) where
     apply f e = f e
-instance KlFun (Exp -> Exp -> Kl Val) where
+instance KlFun (Val -> Val -> Kl Val) where
     apply f e = return (VFun . StdFun $ f e)
 
-data Func = Closure Env Symbol Exp
+data Func = Closure LexEnv Symbol Exp
           | forall f. (KlFun f) => StdFun f
 
 instance Show Func where show _ = "func"
@@ -77,40 +77,40 @@ typeOf VNum{}  = TyNum
 typeOf VList{} = TyList
 typeOf VFun{}  = TyClos
 
-class EnsureType a b where
-    ensureType :: a -> Kl b
+class EnsureType a where
+    ensureType :: Val -> Kl a
 
-instance EnsureType Val [Char] where
+instance EnsureType [Char] where
     ensureType (VStr s) = return s
     ensureType notStr   =
       throwError TypeError{ foundTy = typeOf notStr, expectedTy = TyStr }
 
-instance EnsureType Val Bool where
+instance EnsureType Bool where
     ensureType (VBool b) = return b
     ensureType notBool   =
       throwError TypeError{ foundTy = typeOf notBool, expectedTy = TyBool }
 
-instance EnsureType Val [Val] where
+instance EnsureType [Val] where
     ensureType (VList l) = return l
     ensureType notList =
       throwError TypeError{ foundTy = typeOf notList, expectedTy = TyList }
 
-instance EnsureType Val Double where
+instance EnsureType Double where
     ensureType (VNum n) = return n
     ensureType notNum   =
       throwError TypeError{ foundTy = typeOf notNum, expectedTy = TyNum }
 
-instance EnsureType Val Int where
+instance EnsureType Int where
     ensureType (VNum n) = return $ floor n
     ensureType notNum   =
       throwError TypeError{ foundTy = typeOf notNum, expectedTy = TyNum }
 
-instance EnsureType Val Func where
+instance EnsureType Func where
     ensureType (VFun f) = return f
     ensureType notFun   =
       throwError TypeError{ foundTy = typeOf notFun, expectedTy = TyFun }
 
-instance EnsureType Val Symbol where
+instance EnsureType Symbol where
     ensureType (VSym s) = return s
     ensureType notSym =
       throwError TypeError{ foundTy = typeOf notSym, expectedTy = TySym }
