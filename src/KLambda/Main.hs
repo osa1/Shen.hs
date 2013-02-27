@@ -24,7 +24,7 @@ readAndEval = do
     case parse exp "klambda" (alexScanTokens' input) of
       Left err -> error (show err)
       Right exp' -> do
-        val <- eval exp'
+        val <- eval M.empty exp'
         liftIO $ putStrLn $ show val
         readAndEval
 
