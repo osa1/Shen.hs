@@ -83,8 +83,8 @@ set' = StdFun $ \v1 v2 -> do
   return v2
 
 value = StdFun $ \v -> do
-  s    <- ensureType v
-  senv <- gets symEnv
+  Symbol s <- ensureType v
+  senv     <- gets symEnv
   return $ fromJust (M.lookup s senv)
 
 -- Symbols
