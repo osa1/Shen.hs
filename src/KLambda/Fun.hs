@@ -6,7 +6,10 @@ import qualified Data.HashMap.Strict as M
 import qualified Data.Vector.Mutable as MV
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.State (modify, gets)
+import Control.Monad.Error (throwError)
 import Data.Maybe (fromJust)
+import System.IO (IOMode(..), hGetChar, hClose, hPrint, openFile)
+import System.IO.Error (tryIOError)
 
 import KLambda.Types
 import KLambda.Env
@@ -122,6 +125,47 @@ vecRead = StdFun $ \vec idx -> do
 
 vectorp = klEnsureType TyVec
 
+-- Error handling
+-- --------------------------------------------------------
+
+simpleError :: Func
+simpleError = StdFun $ \s -> do
+  msg <- ensureType s
+  throwError $ ErrMsg msg :: Kl Val
+
+-- Streams and I/O
+-- --------------------------------------------------------
+
+pr, readByte, open, close :: Func
+pr = StdFun $ \s stream -> do
+  (s' :: String) <- ensureType s
+  handle <- ensureType stream
+  liftIO $ hPrint handle s'
+  return $ klVal s'
+
+readByte = StdFun $ \stream -> do
+  handle <- ensureType stream
+  byte <- liftIO $ tryIOError (hGetChar handle)
+  return $ case byte of
+             Left _  -> VNum (-1)
+             Right b -> VNum (fromIntegral $ fromEnum b)
+
+open = StdFun $ \(_ :: Val) path dir -> do
+  path' <- ensureType path
+  Symbol dir' <- ensureType dir
+  mode <- case dir' of
+            "in"  -> return ReadMode
+            "out" -> return WriteMode
+              -- TODO: maybe I should ensure this part and encode it in syntax tree
+            wrong -> throwError $ ErrMsg ("invalid open mode: " ++ wrong)
+  handle <- liftIO $ openFile path' mode
+  return $ klVal handle
+
+close = StdFun $ \stream -> do
+  handle <- ensureType stream
+  liftIO $ hClose handle
+  return $ VList []
+
 -- Standard environment
 -- --------------------------------------------------------
 
@@ -154,4 +198,8 @@ stdenv = M.fromList
   , ("address->", vecAssign)
   , ("<-address", vecRead)
   , ("absvector?", vectorp)
+  , ("pr", pr)
+  , ("read-byte", readByte)
+  , ("open", open)
+  , ("close", close)
   ]

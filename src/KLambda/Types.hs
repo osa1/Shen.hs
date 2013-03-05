@@ -9,6 +9,8 @@ import Control.Monad.Error
 import Control.Monad.State
 import Control.Applicative
 
+import System.IO (Handle)
+
 type Number = Double
 newtype Symbol = Symbol String deriving Show
 
@@ -33,6 +35,7 @@ data Val
     | VFun Func
         -- TODO: Implement Unbox instance and use unboxed vectors
     | VVec (MV.IOVector Val)
+    | VStream Handle
     deriving Show
 
 instance Show (MV.IOVector Val) where
@@ -85,6 +88,7 @@ typeOf VNum{}  = TyNum
 typeOf VList{} = TyList
 typeOf VFun{}  = TyClos
 typeOf VVec{}  = TyVec
+typeOf VStream{} = TyStream
 
 class EnsureType a where
     ensureType :: Val -> Kl a
@@ -129,6 +133,11 @@ instance EnsureType (MV.IOVector Val) where
     ensureType notVec =
       throwError TypeError{ foundTy = typeOf notVec, expectedTy = TyVec }
 
+instance EnsureType Handle where
+    ensureType (VStream v) = return v
+    ensureType notStream =
+      throwError TypeError{ foundTy = typeOf notStream, expectedTy = TyStream }
+
 class KlVal a where
     klVal :: a -> Val
 
@@ -140,3 +149,4 @@ instance KlVal Double where klVal = VNum
 instance KlVal Symbol where klVal = VSym
 instance KlVal (MV.IOVector Val) where klVal = VVec
 instance KlVal a => KlVal [a]  where klVal a = VList $ map klVal a
+instance KlVal Handle where klVal = VStream
