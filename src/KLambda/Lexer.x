@@ -15,7 +15,7 @@ $str         = \0-\255 # [ \" ]
 klambda :-
 
     $whitespace+              ;
-    \" $str* \"               { \posn s -> (Str s, Right posn) }
+    \" $str* \"               { \posn s -> (Str (tail . init $ s), Right posn) }
     \(                        { \posn _ -> (LParen, Right posn) }
     \)                        { \posn _ -> (RParen, Right posn) }
     $alpha                    { \posn s -> (Symbol s, Right posn) }
