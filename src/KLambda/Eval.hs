@@ -6,6 +6,7 @@ import Control.Monad.State hiding (guard)
 
 import KLambda.Types
 import KLambda.Env
+import KLambda.Unparse
 import Prelude hiding (exp, lookup)
 
 instance KlFun Func where
@@ -37,10 +38,22 @@ eval env (EApp e1 e2) = do
       VSym s -> do
         f' <- lookupFun' s
         case f' of
-          Nothing -> error ""
+          Nothing ->
+            case s of
+              Symbol "eval" -> do
+                v2 <- eval env e2
+                case unparse [v2] of
+                  Left _ -> error "parse error"
+                  Right e' -> eval env e'
+                  
+              _ -> error ""
+              
           Just f -> apply f =<< eval env e2
+          
       VFun f -> apply f =<< eval env e2
+
       notFun -> throwError TypeError{ foundTy = typeOf notFun, expectedTy = TyFun }
+      
 eval env (EDefun (Symbol name) lambda) = do
     VFun c@Closure{} <- eval env lambda
     modify $ \e -> insertFunEnv (Symbol name) c e
