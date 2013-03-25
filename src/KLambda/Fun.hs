@@ -4,9 +4,11 @@ module KLambda.Fun where
 
 import qualified Data.HashMap.Strict as M
 import qualified Data.Vector.Mutable as MV
+import qualified Data.Vector         as V
 import Control.Monad.IO.Class (liftIO)
 import Control.Monad.State (modify, gets)
 import Control.Monad.Error (throwError)
+import Control.Monad (zipWithM, liftM)
 import Data.Maybe (fromJust)
 import System.IO (IOMode(..), hGetChar, hClose, hPrint, openFile)
 import System.IO.Error (tryIOError)
@@ -166,6 +168,28 @@ close = StdFun $ \stream -> do
   liftIO $ hClose handle
   return $ VList []
 
+-- Streams and I/O
+-- --------------------------------------------------------
+
+eq :: Func
+eq = StdFun $ \v1 v2 -> liftM VBool $ eq' v1 v2
+  where
+    eq' :: Val -> Val -> Kl Bool
+    eq' (VSym s1)  (VSym s2)  = return $ s1 == s2
+    eq' (VBool b1) (VBool b2) = return $ b1 == b2
+    eq' (VStr s1)  (VStr s2)  = return $ s1 == s2
+    eq' (VNum n1)  (VNum n2)  = return $ n1 == n2
+    eq' (VList l1) (VList l2) = liftM and $ zipWithM eq' l1 l2
+    eq' VFun{}     VFun{}     = return False
+    eq' (VVec v1)  (VVec v2)  = do
+      -- TODO: zipWithM for IOVectors ??
+      v1' <- liftIO $ V.freeze v1
+      v2' <- liftIO $ V.freeze v2
+      liftM V.and $ V.zipWithM eq' v1' v2'
+    eq' VStream{}  VStream{}  = return False
+    eq' _          _          = return False
+
+
 -- Standard environment
 -- --------------------------------------------------------
 
@@ -202,4 +226,5 @@ stdenv = M.fromList
   , ("read-byte", readByte)
   , ("open", open)
   , ("close", close)
+  , ("=", eq)
   ]

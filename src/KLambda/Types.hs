@@ -12,7 +12,7 @@ import Control.Applicative
 import System.IO (Handle)
 
 type Number = Double
-newtype Symbol = Symbol String deriving Show
+newtype Symbol = Symbol String deriving (Show, Eq)
 
 data Exp
     = ESym  String
