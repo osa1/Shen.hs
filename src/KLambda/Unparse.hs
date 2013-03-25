@@ -6,7 +6,7 @@ import KLambda.Types
 import Text.Parsec hiding (string)
 import qualified Text.Parsec.KLambda.Val as V
 
-import Control.Applicative ((<*>), (<$>), (<*))
+import Control.Applicative ((<*>), (<$>))
 
 import Prelude hiding (exp)
 

@@ -40,13 +40,13 @@ eval env (EApp e1 e2) = do
         case f' of
           Nothing ->
             case s of
-              Symbol "eval" -> do
+              Symbol "eval-kl" -> do
                 v2 <- eval env e2
                 case unparse [v2] of
                   Left _ -> error "parse error"
                   Right e' -> eval env e'
                   
-              _ -> error ""
+              _ -> error $ "undefined symbol: " ++ show s
               
           Just f -> apply f =<< eval env e2
           

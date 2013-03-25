@@ -7,8 +7,6 @@ import KLambda.Types
 
 import Text.Parsec hiding (satisfy)
 
-import Control.Monad.Error (throwError)
-
 type Parser = Parsec [Val] ()
 
 satisfy :: Stream [Val] m Val => (Val -> Bool) -> ParsecT [Val] u m Val
