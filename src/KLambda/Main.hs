@@ -25,10 +25,10 @@ readAndEval = do
       Left err -> error (show err)
       Right exp' -> do
         val <- eval M.empty exp'
-        liftIO $ putStrLn $ show val
+        liftIO $ print val
         readAndEval
 
 main :: IO ()
 main = do
     r <- runErrorT $ evalStateT (runKl readAndEval) stdenv
-    putStrLn $ show r
+    print r

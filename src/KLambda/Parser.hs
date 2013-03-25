@@ -5,7 +5,7 @@ import qualified KLambda.Lexer as L
 import KLambda.Types
 
 import Text.Parsec hiding (string)
-import qualified Text.Parsec.KLambda as KL
+import qualified Text.Parsec.KLambda.Exp as KL
 
 import Control.Applicative ((<*>), (<$>), (<*))
 
@@ -76,7 +76,8 @@ ifE = parens $ do
 
 exp = choice
   [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE
-  , try ifE, try appE, unitE ]
+  , try ifE, try appE, unitE
+  ]
 
 parseText :: String -> IO ()
 parseText = parseTest (many exp <* KL.tok L.EOF) . L.alexScanTokens'
