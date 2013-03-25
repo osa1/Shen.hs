@@ -1,7 +1,8 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Eval where
 
-import Control.Monad.Error (throwError)
+import Control.Monad.Error (throwError, catchError)
 import Control.Monad.State hiding (guard)
 
 import KLambda.Types
@@ -45,15 +46,25 @@ eval env (EApp e1 e2) = do
                 case unparse [v2] of
                   Left _ -> error "parse error"
                   Right e' -> eval env e'
-                  
+
+              Symbol "freeze" -> return $ VCont e2
+
+              Symbol "trap-error" ->
+                let handler :: KlException -> Kl Val
+                    handler (UserError err) = return $ VFun . StdFun $ \userHandler -> do
+                      (handlerFun :: Func) <- ensureType userHandler
+                      apply handlerFun (VErr err)
+                    handler err             = throwError err
+                 in eval env e2 `catchError` handler
+
               _ -> error $ "undefined symbol: " ++ show s
-              
+
           Just f -> apply f =<< eval env e2
-          
+
       VFun f -> apply f =<< eval env e2
 
       notFun -> throwError TypeError{ foundTy = typeOf notFun, expectedTy = TyFun }
-      
+
 eval env (EDefun (Symbol name) lambda) = do
     VFun c@Closure{} <- eval env lambda
     modify $ \e -> insertFunEnv (Symbol name) c e

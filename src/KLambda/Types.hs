@@ -36,6 +36,8 @@ data Val
         -- TODO: Implement Unbox instance and use unboxed vectors
     | VVec (MV.IOVector Val)
     | VStream Handle
+    | VCont Exp
+    | VErr UserErrorMsg
     deriving Show
 
 instance Show (MV.IOVector Val) where
@@ -46,9 +48,12 @@ data Type
     | TyVec | TyFun | TyList | TyTuple | TyClos | TyCont
     deriving (Show, Eq)
 
+newtype UserErrorMsg = UserErrorMsg String deriving (Show, Eq)
+
 data KlException
     = TypeError     { foundTy :: Type, expectedTy :: Type }
     | ArityMismatch { foundAr :: Int, expectedAr :: Int }
+    | UserError UserErrorMsg
     | ErrMsg String
     deriving Show
 
@@ -89,6 +94,8 @@ typeOf VList{} = TyList
 typeOf VFun{}  = TyClos
 typeOf VVec{}  = TyVec
 typeOf VStream{} = TyStream
+typeOf VCont{} = TyCont
+typeOf VErr{}  = TyExc
 
 class EnsureType a where
     ensureType :: Val -> Kl a
@@ -137,6 +144,16 @@ instance EnsureType Handle where
     ensureType (VStream v) = return v
     ensureType notStream =
       throwError TypeError{ foundTy = typeOf notStream, expectedTy = TyStream }
+
+instance EnsureType Exp where
+    ensureType (VCont e) = return e
+    ensureType notCont =
+      throwError TypeError{ foundTy = typeOf notCont, expectedTy = TyCont }
+
+instance EnsureType UserErrorMsg where
+    ensureType (VErr msg) = return msg
+    ensureType notErr =
+      throwError TypeError{ foundTy = typeOf notErr, expectedTy = TyExc }
 
 class KlVal a where
     klVal :: a -> Val

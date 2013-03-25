@@ -130,10 +130,15 @@ vectorp = klEnsureType TyVec
 -- Error handling
 -- --------------------------------------------------------
 
-simpleError :: Func
+simpleError, errorToString :: Func
+
 simpleError = StdFun $ \s -> do
   msg <- ensureType s
-  throwError $ ErrMsg msg :: Kl Val
+  throwError $ UserError $ UserErrorMsg msg :: Kl Val
+
+errorToString = StdFun $ \e -> do
+  UserErrorMsg err <- ensureType e
+  return $ VStr err
 
 -- Streams and I/O
 -- --------------------------------------------------------
@@ -227,4 +232,6 @@ stdenv = M.fromList
   , ("open", open)
   , ("close", close)
   , ("=", eq)
+  , ("simple-error", simpleError)
+  , ("error-to-string", errorToString)
   ]
