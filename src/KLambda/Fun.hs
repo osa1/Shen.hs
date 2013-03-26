@@ -184,13 +184,19 @@ eq = StdFun $ \v1 v2 -> liftM VBool $ eq' v1 v2
     eq' (VBool b1) (VBool b2) = return $ b1 == b2
     eq' (VStr s1)  (VStr s2)  = return $ s1 == s2
     eq' (VNum n1)  (VNum n2)  = return $ n1 == n2
-    eq' (VList l1) (VList l2) = liftM and $ zipWithM eq' l1 l2
+    eq' (VList l1) (VList l2) =
+      if length l1 /= length l2
+        then return False
+        else liftM and $ zipWithM eq' l1 l2
     eq' VFun{}     VFun{}     = return False
-    eq' (VVec v1)  (VVec v2)  = do
+    eq' (VVec v1)  (VVec v2)  =
       -- TODO: zipWithM for IOVectors ??
-      v1' <- liftIO $ V.freeze v1
-      v2' <- liftIO $ V.freeze v2
-      liftM V.and $ V.zipWithM eq' v1' v2'
+      if MV.length v1 /= MV.length v2
+        then return False
+        else do
+          v1' <- liftIO $ V.freeze v1
+          v2' <- liftIO $ V.freeze v2
+          liftM V.and $ V.zipWithM eq' v1' v2'
     eq' VStream{}  VStream{}  = return False
     eq' _          _          = return False
 
