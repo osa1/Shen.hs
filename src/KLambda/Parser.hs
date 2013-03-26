@@ -59,7 +59,12 @@ letE = parens $ do
   body <- exp
   return $ EApp (ELambda name body) val
 
-appE = parens $ mkApp <$> exp <*> many exp
+appE = parens $ do
+    fun <- exp
+    args <- many exp
+    return $ if length args == 0
+               then EApp fun EUnit
+               else mkApp fun args
   where mkApp f [] = f
         mkApp f (a:as) = mkApp (EApp f a) as
 
@@ -78,6 +83,9 @@ exp = choice
   [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE
   , try ifE, try appE, unitE
   ]
+
+exps :: KL.Parser [Exp]
+exps = many exp
 
 parseText :: String -> IO ()
 parseText = parseTest (many exp <* KL.tok L.EOF) . L.alexScanTokens'
