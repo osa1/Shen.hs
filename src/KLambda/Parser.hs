@@ -48,7 +48,10 @@ defunE = parens $ do
     name <- anySymbol
     args <- parens $ many anySymbol
     body <- exp
-    return $ EDefun name (mkLambda args body)
+    let binding = if null args
+                    then ELambda (Symbol "__p__") body
+                    else mkLambda args body
+    return $ EDefun name binding
   where mkLambda []     body = body
         mkLambda (a:as) body = ELambda a (mkLambda as body)
 
@@ -62,7 +65,7 @@ letE = parens $ do
 appE = parens $ do
     fun <- exp
     args <- many exp
-    return $ if length args == 0
+    return $ if null args
                then EApp fun EUnit
                else mkApp fun args
   where mkApp f [] = f
