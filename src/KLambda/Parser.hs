@@ -20,37 +20,53 @@ class KLambdaParser tokpos tok | tokpos -> tok where
     num       :: Parsec [tokpos] () Number
     anySymbol :: Parsec [tokpos] () Symbol
     symbol    :: String -> Parsec [tokpos] () tok
+    unit      :: Parsec [tokpos] () ()
 
     listOf    :: Parsec [tokpos] () a -> Parsec [tokpos] () a
 
 instance KLambdaParser L.KlToken L.KlTok where
-    tok       = Exp.tok
-    string    = do
+    tok = Exp.tok
+
+    string = do
       L.Str s <- Exp.string
       return s
-    num       = do
+
+    num = do
       L.Number s <- Exp.num
       return $ read s
+
     anySymbol = do
       L.Symbol s <- Exp.anySymbol
       return (Symbol s)
-    symbol    = Exp.symbol
-    listOf    = Exp.listOf
+
+    symbol = Exp.symbol
+
+    unit = tok L.LParen >> tok L.RParen >> return ()
+
+    listOf = Exp.listOf
 
 instance KLambdaParser Val Val where
-    tok       = Val.tok
-    string    = do
+    tok = Val.tok
+
+    string = do
       VStr s <- Val.string
       return s
-    num       = do
+
+    num = do
       VNum n <- Val.num
       return n
+
     anySymbol = do
       VSym s <- Val.anySymbol
       return s
-    symbol    = Val.symbol
-    listOf    = Val.listOf
 
+    symbol = Val.symbol
+
+    unit = Val.satisfy f >> return ()
+      where f (VList []) = True
+            f _          = False
+
+    listOf = Val.listOf
 
 stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, condE, ifE
   :: KLambdaParser tokpos a => Parsec [tokpos] () Exp
@@ -98,8 +114,6 @@ appE = listOf $ do
   where mkApp f [] = f
         mkApp f (a:as) = mkApp (EApp f a) as
 
---unitE = tok L.LParen >> KL.tok L.RParen >> return EUnit
-
 condE = listOf $ symbol "cond" >> mkIf <$> many case_
   where case_ = listOf $ (,) <$> exp <*> exp
         mkIf [(g, b)]    = EIf g b EUnit
@@ -109,11 +123,10 @@ ifE = listOf $ do
   symbol "if"
   EIf <$> exp <*> exp <*> exp
 
-
 exp :: KLambdaParser tokpos a => Parsec [tokpos] () Exp
 exp = choice
   [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE
-  , try ifE, try appE--, unitE
+  , try ifE, try appE, unit >> return EUnit
   ]
 
 exps :: KLambdaParser tokpos a => Parsec [tokpos] () [Exp]
