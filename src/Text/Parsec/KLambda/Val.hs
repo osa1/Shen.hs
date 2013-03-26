@@ -30,7 +30,7 @@ valeq VVec{}     VVec{}     = error "can't compare vector values"
 valeq VStream{}  VStream{}  = error "can't compare stream values"
 valeq _          _          = False
 
-listOf :: Stream [Val] m Val => Parsec [Val] () b -> ParsecT [Val] () m b
+listOf :: Parsec [Val] () b -> Parsec [Val] () b
 listOf p = do
     VList tokens <- satisfy pred
     case parse p "unparse" tokens of

@@ -1,3 +1,5 @@
+{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies,
+             TypeSynonymInstances, FlexibleInstances #-}
 {-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
 module KLambda.Parser where
 
@@ -5,48 +7,73 @@ import qualified KLambda.Lexer as L
 import KLambda.Types
 
 import Text.Parsec hiding (string)
-import qualified Text.Parsec.KLambda.Exp as KL
+import qualified Text.Parsec.KLambda.Exp as Exp
+import qualified Text.Parsec.KLambda.Val as Val
 
 import Control.Applicative ((<*>), (<$>), (<*))
 
 import Prelude hiding (exp)
 
-parens :: KL.Parser a -> KL.Parser a
-parens = between (KL.tok L.LParen) (KL.tok L.RParen)
+class KLambdaParser tokpos tok | tokpos -> tok where
+    tok       :: tok -> Parsec [tokpos] () tok
+    string    :: Parsec [tokpos] () String
+    num       :: Parsec [tokpos] () Number
+    anySymbol :: Parsec [tokpos] () Symbol
+    symbol    :: String -> Parsec [tokpos] () tok
 
-anySymbol :: KL.Parser Symbol
-anySymbol = do
-    L.Symbol s <- KL.anySymbol
-    return (Symbol s)
+    listOf    :: Parsec [tokpos] () a -> Parsec [tokpos] () a
 
-stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, unitE,
-  condE, ifE, exp :: KL.Parser Exp
-stringE = do
-    L.Str s <- KL.string
-    return $ EStr s
+instance KLambdaParser L.KlToken L.KlTok where
+    tok       = Exp.tok
+    string    = do
+      L.Str s <- Exp.string
+      return s
+    num       = do
+      L.Number s <- Exp.num
+      return $ read s
+    anySymbol = do
+      L.Symbol s <- Exp.anySymbol
+      return (Symbol s)
+    symbol    = Exp.symbol
+    listOf    = Exp.listOf
 
-numE = do
-    L.Number n <- KL.num
-    return $ ENum (read n)
+instance KLambdaParser Val Val where
+    tok       = Val.tok
+    string    = do
+      VStr s <- Val.string
+      return s
+    num       = do
+      VNum n <- Val.num
+      return n
+    anySymbol = do
+      VSym s <- Val.anySymbol
+      return s
+    symbol    = Val.symbol
+    listOf    = Val.listOf
 
-boolE = (KL.symbol "true"  >> return (EBool True))
-    <|> (KL.symbol "false" >> return (EBool False))
 
-symbol' :: KL.Parser String
-symbol' = do
-    L.Symbol s <- KL.anySymbol
-    return s
+stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, condE, ifE
+  :: KLambdaParser tokpos a => Parsec [tokpos] () Exp
 
-symbolE = ESym <$> symbol'
+stringE = EStr <$> string
 
-lambdaE = parens $ do
-  KL.symbol "lambda"
+numE = ENum <$> num
+
+boolE = (symbol "true"  >> return (EBool True))
+    <|> (symbol "false" >> return (EBool False))
+
+symbolE = do
+    Symbol s <- anySymbol
+    return $ ESym s
+
+lambdaE = listOf $ do
+  symbol "lambda"
   ELambda <$> anySymbol <*> exp
 
-defunE = parens $ do
-    KL.symbol "defun"
+defunE = listOf $ do
+    symbol "defun"
     name <- anySymbol
-    args <- parens $ many anySymbol
+    args <- listOf $ many anySymbol
     body <- exp
     let binding = if null args
                     then ELambda (Symbol "__p__") body
@@ -55,15 +82,15 @@ defunE = parens $ do
   where mkLambda []     body = body
         mkLambda (a:as) body = ELambda a (mkLambda as body)
 
-letE = parens $ do
-  KL.symbol "let"
+letE = listOf $ do
+  symbol "let"
   name <- anySymbol
   val  <- exp
   body <- exp
   return $ EApp (ELambda name body) val
 
-appE = parens $ do
-    fun <- exp
+appE = listOf $ do
+    fun  <- exp
     args <- many exp
     return $ if null args
                then EApp fun EUnit
@@ -71,27 +98,29 @@ appE = parens $ do
   where mkApp f [] = f
         mkApp f (a:as) = mkApp (EApp f a) as
 
-unitE = KL.tok L.LParen >> KL.tok L.RParen >> return EUnit
+--unitE = tok L.LParen >> KL.tok L.RParen >> return EUnit
 
-condE = parens $ KL.symbol "cond" >> mkIf <$> many case_
-  where case_ = parens $ (,) <$> exp <*> exp
+condE = listOf $ symbol "cond" >> mkIf <$> many case_
+  where case_ = listOf $ (,) <$> exp <*> exp
         mkIf [(g, b)]    = EIf g b EUnit
         mkIf ((g, b):cs) = EIf g b (mkIf cs)
 
-ifE = parens $ do
-  KL.symbol "if"
+ifE = listOf $ do
+  symbol "if"
   EIf <$> exp <*> exp <*> exp
 
+
+exp :: KLambdaParser tokpos a => Parsec [tokpos] () Exp
 exp = choice
   [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE
-  , try ifE, try appE, unitE
+  , try ifE, try appE--, unitE
   ]
 
-exps :: KL.Parser [Exp]
+exps :: KLambdaParser tokpos a => Parsec [tokpos] () [Exp]
 exps = many exp
 
 parseText :: String -> IO ()
-parseText = parseTest (many exp <* KL.tok L.EOF) . L.alexScanTokens'
+parseText = parseTest (many exp <* tok L.EOF) . L.alexScanTokens'
 
-parseText' :: (Show a) => KL.Parser a -> String -> IO ()
+parseText' :: Show a => Parsec [L.KlToken] () a -> String -> IO ()
 parseText' p = parseTest p . L.alexScanTokens'

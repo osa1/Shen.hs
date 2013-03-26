@@ -2,12 +2,15 @@
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Eval where
 
+import KLambda.Types
+import KLambda.Env
+import KLambda.Parser (exps)
+
 import Control.Monad.Error (throwError, catchError)
 import Control.Monad.State hiding (guard)
 
-import KLambda.Types
-import KLambda.Env
-import KLambda.Unparse
+import Text.Parsec (parse)
+
 import Prelude hiding (exp, lookup)
 
 instance KlFun Func where
@@ -43,9 +46,11 @@ eval env (EApp e1 e2) = do
             case s of
               Symbol "eval-kl" -> do
                 v2 <- eval env e2
-                case unparse [v2] of
+                case parse exps "klambda" [v2] of
                   Left _ -> error "parse error"
-                  Right e' -> eval env e'
+                  Right exps' -> do
+                    vals <- mapM (eval env) exps'
+                    return $ last vals
 
               Symbol "freeze" -> return $ VCont e2
 

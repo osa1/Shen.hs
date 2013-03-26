@@ -19,6 +19,9 @@ satisfy f = tokenPrim show nextPos tokeq
         tokeq :: KlToken -> Maybe KlTok
         tokeq (t, _) = if f t then Just t else Nothing
 
+listOf :: Parsec [KlToken] () b -> Parsec [KlToken] () b
+listOf = between (tok LParen) (tok RParen)
+
 tok :: Stream [KlToken] m KlToken => KlTok -> ParsecT [KlToken] u m KlTok
 tok t = satisfy (t ==) <?> show t
 
