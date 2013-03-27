@@ -99,8 +99,8 @@ value = StdFun $ \v -> do
 
 intern :: Func
 intern = StdFun $ \v -> do
-  s <- ensureType v
-  return $ VSym s
+  (s :: String) <- ensureType v
+  return $ VSym . Symbol $ s
 
 -- Vectors
 -- --------------------------------------------------------
