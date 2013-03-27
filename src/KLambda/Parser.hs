@@ -68,7 +68,7 @@ instance KLambdaParser Val Val where
 
     listOf = Val.listOf
 
-stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, condE, ifE
+stringE, numE, boolE, symbolE, lambdaE, defunE, letE, appE, condE, orE, andE, ifE
   :: KLambdaParser tokpos a => Parsec [tokpos] () Exp
 
 stringE = EStr <$> string
@@ -119,6 +119,18 @@ condE = listOf $ symbol "cond" >> mkIf <$> many case_
         mkIf [(g, b)]    = EIf g b EUnit
         mkIf ((g, b):cs) = EIf g b (mkIf cs)
 
+orE = listOf $ do
+  symbol "or"
+  e1 <- exp
+  e2 <- exp
+  return $ EIf e1 (EBool True) e2
+
+andE = listOf $ do
+  symbol "and"
+  e1 <- exp
+  e2 <- exp
+  return $ EIf e1 e2 (EBool False)
+
 ifE = listOf $ do
   symbol "if"
   EIf <$> exp <*> exp <*> exp
@@ -126,7 +138,7 @@ ifE = listOf $ do
 exp :: KLambdaParser tokpos a => Parsec [tokpos] () Exp
 exp = choice
   [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE
-  , try ifE, try appE, unit >> return EUnit
+  , try orE, try andE, try ifE, try appE, unit >> return EUnit
   ]
 
 exps :: KLambdaParser tokpos a => Parsec [tokpos] () [Exp]
