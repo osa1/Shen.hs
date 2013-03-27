@@ -36,7 +36,6 @@ listOf p = do
     case parse p "unparse" tokens of
       Right r  -> return r
       Left err -> fail $ show err
-      --Left err -> err
   where pred (VList _) = True
         pred _         = False
 

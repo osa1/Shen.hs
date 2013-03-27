@@ -9,6 +9,8 @@ import Control.Monad.Error
 import Control.Monad.State
 import Control.Applicative
 
+import Text.Parsec (ParseError)
+
 import System.IO (Handle)
 
 type Number = Double
@@ -53,7 +55,9 @@ newtype UserErrorMsg = UserErrorMsg String deriving (Show, Eq)
 data KlException
     = TypeError     { foundTy :: Type, expectedTy :: Type }
     | ArityMismatch { foundAr :: Int, expectedAr :: Int }
+    | KlParseError ParseError
     | UserError UserErrorMsg
+    | UnboundSymbol Symbol
     | ErrMsg String
     deriving Show
 

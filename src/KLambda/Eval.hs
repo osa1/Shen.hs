@@ -47,7 +47,7 @@ eval env (EApp e1 e2) = do
               Symbol "eval-kl" -> do
                 v2 <- eval env e2
                 case parse exps "klambda" [v2] of
-                  Left _ -> error "parse error"
+                  Left err -> throwError $ KlParseError err
                   Right exps' -> do
                     vals <- mapM (eval env) exps'
                     return $ last vals
@@ -62,7 +62,7 @@ eval env (EApp e1 e2) = do
                     handler err             = throwError err
                  in eval env e2 `catchError` handler
 
-              _ -> error $ "undefined symbol: " ++ show s
+              _ -> throwError $ UnboundSymbol s
 
           Just f -> apply f =<< eval env e2
 
