@@ -4,6 +4,7 @@ module KLambda.Types where
 
 import qualified Data.HashMap.Strict as M
 import qualified Data.Vector.Mutable as MV
+import Data.Hashable
 
 import Control.Monad.Error
 import Control.Monad.State
@@ -14,7 +15,10 @@ import Text.Parsec (ParseError)
 import System.IO (Handle)
 
 type Number = Double
-newtype Symbol = Symbol String deriving (Show, Eq)
+newtype Symbol = Symbol String deriving (Show, Eq, Ord)
+
+instance Hashable Symbol where
+    hashWithSalt i (Symbol s) = hashWithSalt i s
 
 data Exp
     = ESym  String
