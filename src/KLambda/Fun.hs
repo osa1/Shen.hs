@@ -9,8 +9,7 @@ import Control.Monad.IO.Class (liftIO)
 import Control.Monad.State (modify, gets)
 import Control.Monad.Error (throwError)
 import Control.Monad (zipWithM, liftM)
-import Data.Maybe (fromJust)
-import System.IO (IOMode(..), hGetChar, hClose, hPrint, openFile)
+import System.IO (IOMode(..), hGetChar, hClose, hPutStrLn, openFile)
 import System.IO.Error (tryIOError)
 
 import KLambda.Types
@@ -27,27 +26,27 @@ klEnsureType ty = StdFun $ \v -> returnKl . klVal $ typeOf v == ty
 
 pos, tlstr, cn, str, strp, nToStr, strToN :: Func
 pos = StdFun $ \v1 v2 -> do
-  s             <- ensureType v1
-  (n :: Double) <- ensureType v2
+  s :: String <- ensureType v1
+  n :: Double <- ensureType v2
   return $ VStr [s !! floor n]
 
 tlstr = StdFun $ \v -> do
-  s <- ensureType v
+  s :: String <- ensureType v
   return $ VStr (tail s)
 
 cn = StdFun $ \v1 v2 -> do
-  s1 <- ensureType v1
-  s2 <- ensureType v2
+  s1 :: String <- ensureType v1
+  s2 :: String <- ensureType v2
   return $ VStr (s1 ++ s2)
 
-str = StdFun $ \(v :: Val) -> returnKl $ klVal (show v)
+str = StdFun $ \(v :: Val) -> returnKl $ VStr (show v)
 
 strp = klEnsureType TyStr
 
 nToStr = str
 
 strToN = StdFun $ \v -> do
-  n <- ensureType v
+  n :: String <- ensureType v
   return $ VNum (read n)
 
 -- Lists
@@ -55,16 +54,16 @@ strToN = StdFun $ \v -> do
 
 cons, hd, tl, consp :: Func
 cons = StdFun $ \(v1 :: Val) v2 -> do
-  l  <- ensureType v2
-  return $ klVal (v1:l)
+  l :: [Val] <- ensureType v2
+  return $ VList (v1:l)
 
 hd = StdFun $ \v -> do
-  (l :: [Val]) <- ensureType v
+  l :: [Val] <- ensureType v
   return $ head l
 
 tl = StdFun $ \v -> do
-  (l :: [Val]) <- ensureType v
-  return $ klVal (tail l)
+  l :: [Val] <- ensureType v
+  return $ VList (tail l)
 
 consp = klEnsureType TyList
 
@@ -92,15 +91,17 @@ set' = StdFun $ \v1 v2 -> do
 value = StdFun $ \v -> do
   Symbol s <- ensureType v
   senv     <- gets symEnv
-  return $ fromJust (M.lookup s senv)
+  case M.lookup s senv of
+    Nothing -> throwError $ UnboundSymbol (Symbol s)
+    Just v' -> return v'
 
 -- Symbols
 -- --------------------------------------------------------
 
 intern :: Func
 intern = StdFun $ \v -> do
-  (s :: String) <- ensureType v
-  return $ VSym . Symbol $ s
+  s :: String <- ensureType v
+  return $ (VSym . Symbol) s
 
 -- Vectors
 -- --------------------------------------------------------
@@ -147,15 +148,15 @@ pr, readByte, open, close :: Func
 pr = StdFun $ \s stream -> do
   (s' :: String) <- ensureType s
   handle <- ensureType stream
-  liftIO $ hPrint handle s'
-  return $ klVal s'
+  liftIO $ hPutStrLn handle s'
+  return $ VStr s'
 
 readByte = StdFun $ \stream -> do
   handle <- ensureType stream
   byte <- liftIO $ tryIOError (hGetChar handle)
-  return $ case byte of
-             Left _  -> VNum (-1)
-             Right b -> VNum (fromIntegral $ fromEnum b)
+  return . VNum $ case byte of
+                    Left _  -> -1
+                    Right b -> fromIntegral $ fromEnum b
 
 open = StdFun $ \(_ :: Val) path dir -> do
   path' <- ensureType path
@@ -166,7 +167,7 @@ open = StdFun $ \(_ :: Val) path dir -> do
               -- TODO: maybe I should ensure this part and encode it in syntax tree
             wrong -> throwError $ ErrMsg ("invalid open mode: " ++ wrong)
   handle <- liftIO $ openFile path' mode
-  return $ klVal handle
+  return $ VStream handle
 
 close = StdFun $ \stream -> do
   handle <- ensureType stream
