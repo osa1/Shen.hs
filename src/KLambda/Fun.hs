@@ -57,9 +57,13 @@ strToN = StdFun f
 -- --------------------------------------------------------
 
 cons, hd, tl, consp :: Func
-cons = StdFun $ \(v1 :: Val) v2 -> do
-  l :: [Val] <- ensureType v2
-  return $ VList (v1:l)
+cons = StdFun f
+  where f :: Val -> Val -> Kl Val
+        f v1 v2 =
+          return $ case v2 of
+                     VList []  -> VList [v1, VList []]
+                     VList lst -> VList (v1:lst)
+                     notList   -> VList [v1, v2]
 
 hd = StdFun $ \v -> do
   l :: [Val] <- ensureType v
@@ -67,7 +71,7 @@ hd = StdFun $ \v -> do
 
 tl = StdFun $ \v -> do
   l :: [Val] <- ensureType v
-  return $ VList (tail l)
+  return $ if length l == 2 then l !! 1 else VList (tail l)
 
 consp = klEnsureType TyList
 
