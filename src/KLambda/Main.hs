@@ -48,7 +48,7 @@ readAndEval = do
         val <- (liftM (Just . last . (++) [VList []]) $ mapM (eval M.empty) exps') `catchError` handler
         case val of
           Nothing   -> return ()
-          Just val' -> liftIO $ print val
+          Just val' -> liftIO $ print val'
         readAndEval
   where handler :: KlException -> Kl (Maybe Val)
         handler err = liftIO (print err) >> return Nothing
@@ -58,10 +58,10 @@ evalFiles [] = readAndEval
 evalFiles (path:paths) = do
     file <- liftIO $ readFile path
     case parse exps "klambda" (alexScanTokens' file) of
-      Left err -> liftIO $ print err
+      Left err    -> liftIO $ print err
       Right exps' -> do
-        val <- liftM (last . (++) [VList []]) $ mapM (eval M.empty) exps'
-        liftIO $ print val
+        forM_ exps' $ eval M.empty
+        liftIO $ putStrLn $ "loaded file: " ++ path
     evalFiles paths
 
 main :: IO ()
