@@ -43,7 +43,9 @@ str = StdFun $ \(v :: Val) -> returnKl $ VStr (show v)
 
 strp = klEnsureType TyStr
 
-nToStr = str
+nToStr = StdFun $ \v -> do
+  n :: Double <- ensureType v
+  return $ VStr [toEnum $ floor n]
 
 strToN = StdFun f
   where f :: Val -> Kl Val
