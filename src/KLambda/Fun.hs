@@ -45,9 +45,11 @@ strp = klEnsureType TyStr
 
 nToStr = str
 
-strToN = StdFun $ \v -> do
-  n :: String <- ensureType v
-  return $ VNum (read n)
+strToN = StdFun f
+  where f :: Val -> Kl Val
+        f (VStr s) = return $ VNum . fromIntegral . sum $ map fromEnum s
+        f (VNum n) = return $ VNum n
+        f _        = error "strToN on some other value"
 
 -- Lists
 -- --------------------------------------------------------

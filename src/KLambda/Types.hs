@@ -25,11 +25,15 @@ data Exp
     | EBool Bool
     | EStr  String
     | ENum  Number
-    | EApp Exp Exp
-    | ELambda Symbol Exp
-    | EUnit
+    | EApp  Exp Exp
+    | ELambda (Maybe Symbol) Exp
     | EIf Exp Exp Exp -- guard, then case, else case
     | EDefun Symbol Exp
+    | EEmptyLst
+    -- Unit values/expressions are used in two places,
+    --  1) Function applications with no parameter
+    --  2) Non-exhaustive cond expressions
+    | EUnit
     deriving Show
 
 data Val
@@ -39,11 +43,13 @@ data Val
     | VNum Number
     | VList [Val]
     | VFun Func
+    | VSFun SFun
         -- TODO: Implement Unbox instance and use unboxed vectors
     | VVec (MV.IOVector Val)
     | VStream Handle
     | VCont Exp
     | VErr UserErrorMsg
+    | VUnit
 
 instance Show Val where
     show (VSym (Symbol s)) = s
@@ -52,14 +58,16 @@ instance Show Val where
     show (VNum n) = show n
     show (VList vals) = "(" ++ (unwords (map show vals)) ++ ")"
     show VFun{} = "<function>"
+    show VSFun{} = "<special form>"
     show VVec{} = "<vector>"
     show VStream{} = "<stream>"
     show VCont{} = "<continuation>"
     show VErr{} = "<error>"
+    show VUnit = "<unit>"
 
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc
-    | TyVec | TyFun | TyList | TyTuple | TyClos | TyCont
+    | TyVec | TyFun | TyList | TyTuple | TyClos | TyCont | TyUnit
     deriving (Show, Eq)
 
 newtype UserErrorMsg = UserErrorMsg String deriving (Show, Eq)
@@ -86,17 +94,23 @@ newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
     deriving ( Functor, Applicative, Monad, MonadState Env
              , MonadIO, MonadError KlException )
 
+type SFun = LexEnv -> Exp -> Kl Val
+
 class KlFun a where
     apply :: a -> Val -> Kl Val
+    arity :: a -> Int
 
 instance KlFun (Val -> Kl Val) where
     apply f e = f e
+    arity _ = 1
 instance KlFun (Val -> Val -> Kl Val) where
     apply f e = return (VFun . StdFun $ f e)
+    arity _ = 2
 instance KlFun (Val -> Val -> Val -> Kl Val) where
     apply f e = return (VFun . StdFun $ f e)
+    arity _ = 3
 
-data Func = Closure LexEnv Symbol Exp
+data Func = Closure LexEnv (Maybe Symbol) Exp
           | forall f. (KlFun f) => StdFun f
 
 instance Show Func where show _ = "func"
@@ -108,10 +122,12 @@ typeOf VStr{}  = TyStr
 typeOf VNum{}  = TyNum
 typeOf VList{} = TyList
 typeOf VFun{}  = TyClos
+typeOf VSFun{} = TyClos -- FIXME
 typeOf VVec{}  = TyVec
 typeOf VStream{} = TyStream
 typeOf VCont{} = TyCont
 typeOf VErr{}  = TyExc
+typeOf VUnit{} = TyUnit
 
 class EnsureType a where
     ensureType :: Val -> Kl a

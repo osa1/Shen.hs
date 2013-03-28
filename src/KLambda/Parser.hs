@@ -84,7 +84,7 @@ symbolE = do
 
 lambdaE = listOf $ do
   symbol "lambda"
-  ELambda <$> anySymbol <*> exp
+  ELambda <$> (Just <$> anySymbol) <*> exp
 
 defunE = listOf $ do
     symbol "defun"
@@ -92,18 +92,18 @@ defunE = listOf $ do
     args <- listOf $ many anySymbol
     body <- exp
     let binding = if null args
-                    then ELambda (Symbol "__p__") body
+                    then ELambda Nothing body
                     else mkLambda args body
     return $ EDefun name binding
   where mkLambda []     body = body
-        mkLambda (a:as) body = ELambda a (mkLambda as body)
+        mkLambda (a:as) body = ELambda (Just a) (mkLambda as body)
 
 letE = listOf $ do
   symbol "let"
   name <- anySymbol
   val  <- exp
   body <- exp
-  return $ EApp (ELambda name body) val
+  return $ EApp (ELambda (Just name) body) val
 
 appE = listOf $ do
     fun  <- exp
@@ -125,6 +125,8 @@ orE = listOf $ do
   e2 <- exp
   return $ EIf e1 (EBool True) e2
 
+-- TODO: maybe I should implement andE and orE as a special form like
+-- eval-kl to keep parser simple
 andE = listOf $ do
   symbol "and"
   e1 <- exp
@@ -138,7 +140,7 @@ ifE = listOf $ do
 exp :: KLambdaParser tokpos a => Parsec [tokpos] () Exp
 exp = choice
   [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE
-  , try orE, try andE, try ifE, try appE, unit >> return EUnit
+  , try orE, try andE, try ifE, try appE, unit >> return EEmptyLst
   ]
 
 exps :: KLambdaParser tokpos a => Parsec [tokpos] () [Exp]
