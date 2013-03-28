@@ -1,1309 +1,252 @@
+"**********************************************************************************
+*                           The License						                                      *
+* 										                                                                  *
+* The user is free to produce commercial applications with the software, to 	          *
+* distribute these applications in source or binary  form, and to charge monies         *
+* for them as he sees fit and in concordance with the laws of the land subject 	        *
+* to the following license.							                                                *
+*										                                                                    * 
+* 1. The license applies to all the software and all derived software and 	            *
+*    must appear on such.							                                                  *
+*										                                                                    *
+* 2. It is illegal to distribute the software without this license attached	            *
+*    to it and use of the software implies agreement with the license as such.          *
+*    It is illegal for anyone who is not the copyright holder to tamper with 	          *
+*    or change the license.							                                                *
+*										                                                                    *
+* 3. Neither the names of Lambda Associates or the copyright holder may be used         *
+*    to endorse or promote products built using the software without specific 	        *
+*    prior written permission from the copyright holder.		                            *
+*										                                                                    *
+* 4. That possession of this license does not confer on the copyright holder 	          *
+*    any special contractual obligation towards the user. That in no event 	            * 
+*    shall the copyright holder be liable for any direct, indirect, incidental,        *   
+*    special, exemplary or consequential damages (including but not limited             *
+*    to procurement of substitute goods or services, loss of use, data, 	              * 
+*    interruption), however caused and on any theory of liability, whether in	          * 
+*    contract, strict liability or tort (including negligence) arising in any         	*
+*    way out of the use of the software, even if advised of the possibility of         	*
+*    such damage.						                                                        		* 
+*										                                                                    *
+* 5. It is permitted for the user to change the software, for the purpose of 	          *
+*    improving performance, correcting an error, or porting to a new platform, 	        *
+*    and distribute the derived version of Shen provided the resulting program 	        *
+*    conforms in all respects to the Shen standard and is issued under that             * 
+*    title. The user must make it clear with his distribution that he/she is 	          *
+*    the author of the changes and what these changes are and why. 		                  *
+*										                                                                    *
+* 6. Derived versions of this software in whatever form are subject to the same         *
+*    restrictions. In particular it is not permitted to make derived copies of          *
+*    this software which do not conform to the Shen standard or appear under a          *
+*    different title.								                                                    *
+*										                                                                    *
+*    It is permitted to distribute versions of Shen which incorporate libraries,        *
+*    graphics or other facilities which are not part of the Shen standard.	            *
+*										                                                                    *
+* For an explication of this license see www.shenlanguage.org/license.htm which         *
+* explains this license in full.                                                        *
+*				 						                                                                    *
+*****************************************************************************************
+"(defun shen.<defprolog> (V898) (let Result (let Parse_shen.<predicate*> (shen.<predicate*> V898) (if (not (= (fail) Parse_shen.<predicate*>)) (let Parse_shen.<clauses*> (shen.<clauses*> Parse_shen.<predicate*>) (if (not (= (fail) Parse_shen.<clauses*>)) (shen.pair (hd Parse_shen.<clauses*>) (hd (shen.prolog->shen (map (lambda Parse_X (shen.insert-predicate (shen.hdtl Parse_shen.<predicate*>) Parse_X)) (shen.hdtl Parse_shen.<clauses*>))))) (fail))) (fail))) (if (= Result (fail)) (fail) Result)))
 
-"                                                   The License
- 
- The user is free to produce commercial applications with the software, to distribute these applications in source or binary  form, and to charge monies for them as he sees fit and in concordance with the laws of the land subject to the following  license.
- 
- 1. The license applies to all the software and all derived software and must appear on such.
- 2. It is illegal to distribute the software without this license attached to it and use of the software implies agreement 
-    with the license as such. It is illegal for anyone who is not the copyright holder to tamper with or change the license.
- 3. Neither the names of Lambda Associates or the copyright holder may be used to endorse or promote products built using
-     the software without specific prior written permission from the copyright holder.
- 4. That possession of this license does not confer on the copyright holder any special contractual obligation towards the    user. That in no event shall the copyright holder be liable for any direct, indirect, incidental, special, exemplary or   consequential damages (including but not limited to procurement of substitute goods or services, loss of use, data, or    profits; or business interruption), however caused and on any theory of liability, whether in contract, strict liability   or tort (including negligence) arising in any way out of the use of the software, even if advised of the possibility of   such damage. 
-5. It is permitted for the user to change the software, for the purpose of improving performance, correcting an error, or    porting to a new platform, and distribute the modified version of Shen (hereafter the modified version) provided the     resulting program conforms in all respects to the Shen standard and is issued under that title. The user must make it clear   with his distribution that he/she is the author of the changes and what these changes are and why. 
-6. Derived versions of this software in whatever form are subject to the same restrictions. In particular it is not          permitted to make derived copies of this software which do not conform to the Shen standard or appear under a different title.
-7. It is permitted to distribute versions of Shen which incorporate libraries, graphics or other facilities which are not    part of the Shen standard.
-
-For an explication of this license see http://www.lambdassociates.org/News/june11/license.htm which explains this license in full."
-
-(defun shen-<defprolog> (V1168)
- (let Result
-  (let Parse_<predicate*> (shen-<predicate*> V1168)
-   (if (not (= (fail) Parse_<predicate*>))
-    (let Parse_<clauses*> (shen-<clauses*> Parse_<predicate*>)
-     (if (not (= (fail) Parse_<clauses*>))
-      (shen-reassemble (fst Parse_<clauses*>)
-       (hd
-        (shen-prolog->shen
-         (map (lambda X (shen-insert-predicate (snd Parse_<predicate*>) X))
-          (snd Parse_<clauses*>)))))
-      (fail)))
-    (fail)))
-  (if (= Result (fail)) (fail) Result)))
-
-(defun shen-prolog-error (V1169 V1170)
- (interror "prolog syntax error in ~A here:~%~% ~A~%"
-  (@p V1169 (@p (shen-next-50 50 V1170) ()))))
-
-(defun shen-next-50 (V1175 V1176)
- (cond ((= () V1176) "") ((= 0 V1175) "")
-  ((cons? V1176)
-   (cn (shen-decons-string (hd V1176)) (shen-next-50 (- V1175 1) (tl V1176))))
-  (true (shen-sys-error shen-next-50))))
-
-(defun shen-decons-string (V1177)
- (cond
-  ((and (cons? V1177)
-    (and (= cons (hd V1177))
-     (and (cons? (tl V1177))
-      (and (cons? (tl (tl V1177))) (= () (tl (tl (tl V1177))))))))
-   (intmake-string "~S " (@p (shen-eval-cons V1177) ())))
-  (true (intmake-string "~R " (@p V1177 ())))))
-
-(defun shen-insert-predicate (V1178 V1179)
- (cond
-  ((and (cons? V1179) (and (cons? (tl V1179)) (= () (tl (tl V1179)))))
-   (cons (cons V1178 (hd V1179)) (cons :- (tl V1179))))
-  (true (shen-sys-error shen-insert-predicate))))
-
-(defun shen-<predicate*> (V1180)
- (let Result
-  (if (cons? (fst V1180))
-   (shen-reassemble (fst (shen-reassemble (tl (fst V1180)) (snd V1180)))
-    (hd (fst V1180)))
-   (fail))
-  (if (= Result (fail)) (fail) Result)))
-
-(defun shen-<clauses*> (V1181)
- (let Result
-  (let Parse_<clause*> (shen-<clause*> V1181)
-   (if (not (= (fail) Parse_<clause*>))
-    (let Parse_<clauses*> (shen-<clauses*> Parse_<clause*>)
-     (if (not (= (fail) Parse_<clauses*>))
-      (shen-reassemble (fst Parse_<clauses*>)
-       (cons (snd Parse_<clause*>) (snd Parse_<clauses*>)))
-      (fail)))
-    (fail)))
-  (if (= Result (fail))
-   (let Result
-    (let Parse_<e> (<e> V1181)
-     (if (not (= (fail) Parse_<e>))
-      (shen-reassemble (fst Parse_<e>) (snd Parse_<e>)) (fail)))
-    (if (= Result (fail)) (fail) Result))
-   Result)))
-
-(defun shen-<clause*> (V1182)
- (let Result
-  (let Parse_<head*> (shen-<head*> V1182)
-   (if (not (= (fail) Parse_<head*>))
-    (if (and (cons? (fst Parse_<head*>)) (= <-- (hd (fst Parse_<head*>))))
-     (let Parse_<body*>
-      (shen-<body*>
-       (shen-reassemble (tl (fst Parse_<head*>)) (snd Parse_<head*>)))
-      (if (not (= (fail) Parse_<body*>))
-       (let Parse_<end*> (shen-<end*> Parse_<body*>)
-        (if (not (= (fail) Parse_<end*>))
-         (shen-reassemble (fst Parse_<end*>)
-          (cons (snd Parse_<head*>) (cons (snd Parse_<body*>) ())))
-         (fail)))
-       (fail)))
-     (fail))
-    (fail)))
-  (if (= Result (fail)) (fail) Result)))
-
-(defun shen-<head*> (V1183)
- (let Result
-  (let Parse_<term*> (shen-<term*> V1183)
-   (if (not (= (fail) Parse_<term*>))
-    (let Parse_<head*> (shen-<head*> Parse_<term*>)
-     (if (not (= (fail) Parse_<head*>))
-      (shen-reassemble (fst Parse_<head*>)
-       (cons (snd Parse_<term*>) (snd Parse_<head*>)))
-      (fail)))
-    (fail)))
-  (if (= Result (fail))
-   (let Result
-    (let Parse_<e> (<e> V1183)
-     (if (not (= (fail) Parse_<e>))
-      (shen-reassemble (fst Parse_<e>) (snd Parse_<e>)) (fail)))
-    (if (= Result (fail)) (fail) Result))
-   Result)))
-
-(defun shen-<term*> (V1184)
- (let Result
-  (if (cons? (fst V1184))
-   (shen-reassemble (fst (shen-reassemble (tl (fst V1184)) (snd V1184)))
-    (if
-     (and (not (= <-- (hd (fst V1184))))
-      (shen-legitimate-term? (hd (fst V1184))))
-     (shen-eval-cons (hd (fst V1184))) (fail)))
-   (fail))
-  (if (= Result (fail)) (fail) Result)))
-
-(defun shen-legitimate-term? (V1189)
- (cond
-  ((and (cons? V1189)
-    (and (= cons (hd V1189))
-     (and (cons? (tl V1189))
-      (and (cons? (tl (tl V1189))) (= () (tl (tl (tl V1189))))))))
-   (and (shen-legitimate-term? (hd (tl V1189)))
-    (shen-legitimate-term? (hd (tl (tl V1189))))))
-  ((and (cons? V1189)
-    (and (= mode (hd V1189))
-     (and (cons? (tl V1189))
-      (and (cons? (tl (tl V1189)))
-       (and (= + (hd (tl (tl V1189)))) (= () (tl (tl (tl V1189)))))))))
-   (shen-legitimate-term? (hd (tl V1189))))
-  ((and (cons? V1189)
-    (and (= mode (hd V1189))
-     (and (cons? (tl V1189))
-      (and (cons? (tl (tl V1189)))
-       (and (= - (hd (tl (tl V1189)))) (= () (tl (tl (tl V1189)))))))))
-   (shen-legitimate-term? (hd (tl V1189))))
-  ((cons? V1189) false) (true true)))
-
-(defun shen-eval-cons (V1190)
- (cond
-  ((and (cons? V1190)
-    (and (= cons (hd V1190))
-     (and (cons? (tl V1190))
-      (and (cons? (tl (tl V1190))) (= () (tl (tl (tl V1190))))))))
-   (cons (shen-eval-cons (hd (tl V1190)))
-    (shen-eval-cons (hd (tl (tl V1190))))))
-  ((and (cons? V1190)
-    (and (= mode (hd V1190))
-     (and (cons? (tl V1190))
-      (and (cons? (tl (tl V1190))) (= () (tl (tl (tl V1190))))))))
-   (cons mode (cons (shen-eval-cons (hd (tl V1190))) (tl (tl V1190)))))
-  (true V1190)))
-
-(defun shen-<body*> (V1191)
- (let Result
-  (let Parse_<literal*> (shen-<literal*> V1191)
-   (if (not (= (fail) Parse_<literal*>))
-    (let Parse_<body*> (shen-<body*> Parse_<literal*>)
-     (if (not (= (fail) Parse_<body*>))
-      (shen-reassemble (fst Parse_<body*>)
-       (cons (snd Parse_<literal*>) (snd Parse_<body*>)))
-      (fail)))
-    (fail)))
-  (if (= Result (fail))
-   (let Result
-    (let Parse_<e> (<e> V1191)
-     (if (not (= (fail) Parse_<e>))
-      (shen-reassemble (fst Parse_<e>) (snd Parse_<e>)) (fail)))
-    (if (= Result (fail)) (fail) Result))
-   Result)))
-
-(defun shen-<literal*> (V1192)
- (let Result
-  (if (and (cons? (fst V1192)) (= ! (hd (fst V1192))))
-   (shen-reassemble (fst (shen-reassemble (tl (fst V1192)) (snd V1192)))
-    (cons cut (cons Throwcontrol ())))
-   (fail))
-  (if (= Result (fail))
-   (let Result
-    (if (cons? (fst V1192))
-     (shen-reassemble (fst (shen-reassemble (tl (fst V1192)) (snd V1192)))
-      (if (cons? (hd (fst V1192))) (hd (fst V1192)) (fail)))
-     (fail))
-    (if (= Result (fail)) (fail) Result))
-   Result)))
-
-(defun shen-<end*> (V1193)
- (let Result
-  (if (cons? (fst V1193))
-   (shen-reassemble (fst (shen-reassemble (tl (fst V1193)) (snd V1193)))
-    (if (= (hd (fst V1193)) ;) shen-skip (fail)))
-   (fail))
-  (if (= Result (fail)) (fail) Result)))
-
-(defun cut (V1194 V1195 V1196)
- (let Result (thaw V1196) (if (= Result false) V1194 Result)))
-
-(defun shen-insert_modes (V1197)
- (cond
-  ((and (cons? V1197)
-    (and (= mode (hd V1197))
-     (and (cons? (tl V1197))
-      (and (cons? (tl (tl V1197))) (= () (tl (tl (tl V1197))))))))
-   V1197)
-  ((= () V1197) ())
-  ((cons? V1197)
-   (cons (cons mode (cons (hd V1197) (cons + ())))
-    (cons mode (cons (shen-insert_modes (tl V1197)) (cons - ())))))
-  (true V1197)))
-
-(defun shen-s-prolog (V1198)
- (map (lambda V1199 (eval V1199)) (shen-prolog->shen V1198)))
-
-(defun shen-prolog->shen (V1200)
- (map (lambda V1201 (shen-compile_prolog_procedure V1201))
-  (shen-group_clauses
-   (map (lambda V1202 (shen-s-prolog_clause V1202))
-    (mapcan (lambda V1203 (shen-head_abstraction V1203)) V1200)))))
-
-(defun shen-s-prolog_clause (V1204)
- (cond
-  ((and (cons? V1204)
-    (and (cons? (tl V1204))
-     (and (= :- (hd (tl V1204)))
-      (and (cons? (tl (tl V1204))) (= () (tl (tl (tl V1204))))))))
-   (cons (hd V1204)
-    (cons :-
-     (cons
-      (map (lambda V1205 (shen-s-prolog_literal V1205)) (hd (tl (tl V1204))))
-      ()))))
-  (true (shen-sys-error shen-s-prolog_clause))))
-
-(defun shen-head_abstraction (V1206)
- (cond
-  ((and (cons? V1206)
-    (and (cons? (tl V1206))
-     (and (= :- (hd (tl V1206)))
-      (and (cons? (tl (tl V1206)))
-       (and (= () (tl (tl (tl V1206))))
-        (< (shen-complexity_head (hd V1206))
-         (value shen-*maxcomplexity*)))))))
-   (cons V1206 ()))
-  ((and (cons? V1206)
-    (and (cons? (hd V1206))
-     (and (cons? (tl V1206))
-      (and (= :- (hd (tl V1206)))
-       (and (cons? (tl (tl V1206))) (= () (tl (tl (tl V1206)))))))))
-   (let Terms (map (lambda Y (gensym V)) (tl (hd V1206)))
-    (let XTerms (shen-rcons_form (shen-remove_modes (tl (hd V1206))))
-     (let Literal (cons unify (cons (shen-cons_form Terms) (cons XTerms ())))
-      (let Clause
-       (cons (cons (hd (hd V1206)) Terms)
-        (cons :- (cons (cons Literal (hd (tl (tl V1206)))) ())))
-       (cons Clause ()))))))
-  (true (shen-sys-error shen-head_abstraction))))
-
-(defun shen-complexity_head (V1211)
- (cond
-  ((cons? V1211)
-   (shen-product (map (lambda V1212 (shen-complexity V1212)) (tl V1211))))
-  (true (shen-sys-error shen-complexity_head))))
-
-(defun shen-complexity (V1220)
- (cond
-  ((and (cons? V1220)
-    (and (= mode (hd V1220))
-     (and (cons? (tl V1220))
-      (and (cons? (hd (tl V1220)))
-       (and (= mode (hd (hd (tl V1220))))
-        (and (cons? (tl (hd (tl V1220))))
-         (and (cons? (tl (tl (hd (tl V1220)))))
-          (and (= () (tl (tl (tl (hd (tl V1220))))))
-           (and (cons? (tl (tl V1220)))
-            (= () (tl (tl (tl V1220)))))))))))))
-   (shen-complexity (hd (tl V1220))))
-  ((and (cons? V1220)
-    (and (= mode (hd V1220))
-     (and (cons? (tl V1220))
-      (and (cons? (hd (tl V1220)))
-       (and (cons? (tl (tl V1220)))
-        (and (= + (hd (tl (tl V1220))))
-         (= () (tl (tl (tl V1220))))))))))
-   (* 2
-    (*
-     (shen-complexity (cons mode (cons (hd (hd (tl V1220))) (tl (tl V1220)))))
-     (shen-complexity
-      (cons mode (cons (tl (hd (tl V1220))) (tl (tl V1220))))))))
-  ((and (cons? V1220)
-    (and (= mode (hd V1220))
-     (and (cons? (tl V1220))
-      (and (cons? (hd (tl V1220)))
-       (and (cons? (tl (tl V1220)))
-        (and (= - (hd (tl (tl V1220))))
-         (= () (tl (tl (tl V1220))))))))))
-   (* (shen-complexity (cons mode (cons (hd (hd (tl V1220))) (tl (tl V1220)))))
-    (shen-complexity (cons mode (cons (tl (hd (tl V1220))) (tl (tl V1220)))))))
-  ((and (cons? V1220)
-    (and (= mode (hd V1220))
-     (and (cons? (tl V1220))
-      (and (cons? (tl (tl V1220)))
-       (and (= () (tl (tl (tl V1220)))) (variable? (hd (tl V1220))))))))
-   1)
-  ((and (cons? V1220)
-    (and (= mode (hd V1220))
-     (and (cons? (tl V1220))
-      (and (cons? (tl (tl V1220)))
-       (and (= + (hd (tl (tl V1220)))) (= () (tl (tl (tl V1220)))))))))
-   2)
-  ((and (cons? V1220)
-    (and (= mode (hd V1220))
-     (and (cons? (tl V1220))
-      (and (cons? (tl (tl V1220)))
-       (and (= - (hd (tl (tl V1220)))) (= () (tl (tl (tl V1220)))))))))
-   1)
-  (true (shen-complexity (cons mode (cons V1220 (cons + ())))))))
-
-(defun shen-product (V1221)
- (cond ((= () V1221) 1)
-  ((cons? V1221) (* (hd V1221) (shen-product (tl V1221))))
-  (true (shen-sys-error shen-product))))
-
-(defun shen-s-prolog_literal (V1222)
- (cond
-  ((and (cons? V1222)
-    (and (= is (hd V1222))
-     (and (cons? (tl V1222))
-      (and (cons? (tl (tl V1222))) (= () (tl (tl (tl V1222))))))))
-   (cons bind
-    (cons (hd (tl V1222))
-     (cons (shen-insert_deref (hd (tl (tl V1222)))) ()))))
-  ((and (cons? V1222)
-    (and (= when (hd V1222))
-     (and (cons? (tl V1222)) (= () (tl (tl V1222))))))
-   (cons fwhen (cons (shen-insert_deref (hd (tl V1222))) ())))
-  ((and (cons? V1222)
-    (and (= bind (hd V1222))
-     (and (cons? (tl V1222))
-      (and (cons? (tl (tl V1222))) (= () (tl (tl (tl V1222))))))))
-   (cons bind
-    (cons (hd (tl V1222))
-     (cons (shen-insert_lazyderef (hd (tl (tl V1222)))) ()))))
-  ((and (cons? V1222)
-    (and (= fwhen (hd V1222))
-     (and (cons? (tl V1222)) (= () (tl (tl V1222))))))
-   (cons fwhen (cons (shen-insert_lazyderef (hd (tl V1222))) ())))
-  ((cons? V1222)
-   (cons (shen-m_prolog_to_s-prolog_predicate (hd V1222)) (tl V1222)))
-  (true (shen-sys-error shen-s-prolog_literal))))
-
-(defun shen-insert_deref (V1223)
- (cond ((variable? V1223) (cons shen-deref (cons V1223 (cons ProcessN ()))))
-  ((cons? V1223)
-   (cons (shen-insert_deref (hd V1223)) (shen-insert_deref (tl V1223))))
-  (true V1223)))
-
-(defun shen-insert_lazyderef (V1224)
- (cond
-  ((variable? V1224) (cons shen-lazyderef (cons V1224 (cons ProcessN ()))))
-  ((cons? V1224)
-   (cons (shen-insert_lazyderef (hd V1224))
-    (shen-insert_lazyderef (tl V1224))))
-  (true V1224)))
-
-(defun shen-m_prolog_to_s-prolog_predicate (V1225)
- (cond ((= = V1225) unify) ((= =! V1225) unify!)
-  ((= == V1225) identical) (true V1225)))
-
-(defun shen-group_clauses (V1226)
- (cond ((= () V1226) ())
-  ((cons? V1226)
-   (let Group
-    (shen-collect (lambda X (shen-same_predicate? (hd V1226) X)) V1226)
-    (let Rest (difference V1226 Group)
-     (cons Group (shen-group_clauses Rest)))))
-  (true (shen-sys-error shen-group_clauses))))
-
-(defun shen-collect (V1229 V1230)
- (cond ((= () V1230) ())
-  ((cons? V1230)
-   (if (V1229 (hd V1230)) (cons (hd V1230) (shen-collect V1229 (tl V1230)))
-    (shen-collect V1229 (tl V1230))))
-  (true (shen-sys-error shen-collect))))
-
-(defun shen-same_predicate? (V1247 V1248)
- (cond
-  ((and (cons? V1247)
-    (and (cons? (hd V1247)) (and (cons? V1248) (cons? (hd V1248)))))
-   (= (hd (hd V1247)) (hd (hd V1248))))
-  (true (shen-sys-error shen-same_predicate?))))
-
-(defun shen-compile_prolog_procedure (V1249)
- (let F (shen-procedure_name V1249)
-  (let Shen (shen-clauses-to-shen F V1249) Shen)))
-
-(defun shen-procedure_name (V1262)
- (cond
-  ((and (cons? V1262) (and (cons? (hd V1262)) (cons? (hd (hd V1262)))))
-   (hd (hd (hd V1262))))
-  (true (shen-sys-error shen-procedure_name))))
-
-(defun shen-clauses-to-shen (V1263 V1264)
- (let Linear (map (lambda V1265 (shen-linearise-clause V1265)) V1264)
-  (let Arity
-   (shen-prolog-aritycheck V1263 (map (lambda V1266 (head V1266)) V1264))
-   (let Parameters (shen-parameters Arity)
-    (let AUM_instructions (map (lambda X (shen-aum X Parameters)) Linear)
-     (let Code
-      (shen-catch-cut
-       (shen-nest-disjunct
-        (map (lambda V1267 (shen-aum_to_shen V1267)) AUM_instructions)))
-      (let ShenDef
-       (cons define
-        (cons V1263
-         (append Parameters
-          (append (cons ProcessN (cons Continuation ()))
-           (cons -> (cons Code ()))))))
-       ShenDef)))))))
-
-(defun shen-catch-cut (V1268)
- (cond ((not (shen-occurs? cut V1268)) V1268)
-  (true
-   (cons let
-    (cons Throwcontrol
-     (cons (cons shen-catchpoint ())
-      (cons (cons shen-cutpoint (cons Throwcontrol (cons V1268 ())))
-       ())))))))
-
-(defun shen-catchpoint () (set shen-*catch* (+ 1 (value shen-*catch*))))
-
-(defun shen-cutpoint (V1273 V1274)
- (cond ((= V1274 V1273) false) (true V1274)))
-
-(defun shen-nest-disjunct (V1276)
- (cond ((and (cons? V1276) (= () (tl V1276))) (hd V1276))
-  ((cons? V1276) (shen-lisp-or (hd V1276) (shen-nest-disjunct (tl V1276))))
-  (true (shen-sys-error shen-nest-disjunct))))
-
-(defun shen-lisp-or (V1277 V1278)
- (cons let
-  (cons Case
-   (cons V1277
-    (cons
-     (cons if
-      (cons (cons = (cons Case (cons false ())))
-       (cons V1278 (cons Case ()))))
-     ())))))
-
-(defun shen-prolog-aritycheck (V1281 V1282)
- (cond ((and (cons? V1282) (= () (tl V1282))) (- (length (hd V1282)) 1))
-  ((and (cons? V1282) (cons? (tl V1282)))
-   (if (= (length (hd V1282)) (length (hd (tl V1282))))
-    (shen-prolog-aritycheck V1281 (tl V1282))
-    (interror "arity error in prolog procedure ~A~%"
-     (@p (cons V1281 ()) ()))))
-  (true (shen-sys-error shen-prolog-aritycheck))))
-
-(defun shen-linearise-clause (V1283)
- (cond
-  ((and (cons? V1283)
-    (and (cons? (tl V1283))
-     (and (= :- (hd (tl V1283)))
-      (and (cons? (tl (tl V1283))) (= () (tl (tl (tl V1283))))))))
-   (let Linear (shen-linearise (cons (hd V1283) (tl (tl V1283))))
-    (shen-clause_form Linear)))
-  (true (shen-sys-error shen-linearise-clause))))
-
-(defun shen-clause_form (V1284)
- (cond
-  ((and (cons? V1284) (and (cons? (tl V1284)) (= () (tl (tl V1284)))))
-   (cons (shen-explicit_modes (hd V1284))
-    (cons :- (cons (shen-cf_help (hd (tl V1284))) ()))))
-  (true (shen-sys-error shen-clause_form))))
-
-(defun shen-explicit_modes (V1285)
- (cond
-  ((cons? V1285)
-   (cons (hd V1285) (map (lambda V1286 (shen-em_help V1286)) (tl V1285))))
-  (true (shen-sys-error shen-explicit_modes))))
-
-(defun shen-em_help (V1287)
- (cond
-  ((and (cons? V1287)
-    (and (= mode (hd V1287))
-     (and (cons? (tl V1287))
-      (and (cons? (tl (tl V1287))) (= () (tl (tl (tl V1287))))))))
-   V1287)
-  (true (cons mode (cons V1287 (cons + ()))))))
-
-(defun shen-cf_help (V1288)
- (cond
-  ((and (cons? V1288)
-    (and (= where (hd V1288))
-     (and (cons? (tl V1288))
-      (and (cons? (hd (tl V1288)))
-       (and (= = (hd (hd (tl V1288))))
-        (and (cons? (tl (hd (tl V1288))))
-         (and (cons? (tl (tl (hd (tl V1288)))))
-          (and (= () (tl (tl (tl (hd (tl V1288))))))
-           (and (cons? (tl (tl V1288)))
-            (= () (tl (tl (tl V1288)))))))))))))
-   (cons (cons (if (value shen-*occurs*) unify! unify) (tl (hd (tl V1288))))
-    (shen-cf_help (hd (tl (tl V1288))))))
-  (true V1288)))
-
-(defun occurs-check (V1293)
- (cond ((= + V1293) (set shen-*occurs* true))
-  ((= - V1293) (set shen-*occurs* false))
-  (true (interror "occurs-check expects + or -~%" ()))))
-
-(defun shen-aum (V1294 V1295)
- (cond
-  ((and (cons? V1294)
-    (and (cons? (hd V1294))
-     (and (cons? (tl V1294))
-      (and (= :- (hd (tl V1294)))
-       (and (cons? (tl (tl V1294))) (= () (tl (tl (tl V1294)))))))))
-   (let MuApplication
-    (shen-make_mu_application
-     (cons shen-mu
-      (cons (tl (hd V1294))
-       (cons (shen-continuation_call (tl (hd V1294)) (hd (tl (tl V1294))))
-        ())))
-     V1295)
-    (shen-mu_reduction MuApplication +)))
-  (true (shen-sys-error shen-aum))))
-
-(defun shen-continuation_call (V1296 V1297)
- (let VTerms (cons ProcessN (shen-extract_vars V1296))
-  (let VBody (shen-extract_vars V1297)
-   (let Free (remove Throwcontrol (difference VBody VTerms))
-    (shen-cc_help Free V1297)))))
-
-(defun remove (V1298 V1299) (shen-remove-h V1298 V1299 ()))
-
-(defun shen-remove-h (V1302 V1303 V1304)
- (cond ((= () V1303) (reverse V1304))
-  ((and (cons? V1303) (= (hd V1303) V1302))
-   (shen-remove-h (hd V1303) (tl V1303) V1304))
-  ((cons? V1303) (shen-remove-h V1302 (tl V1303) (cons (hd V1303) V1304)))
-  (true (shen-sys-error shen-remove-h))))
-
-(defun shen-cc_help (V1306 V1307)
- (cond
-  ((and (= () V1306) (= () V1307))
-   (cons shen-pop (cons shen-the (cons shen-stack ()))))
-  ((= () V1307)
-   (cons shen-rename
-    (cons shen-the
-     (cons shen-variables
-      (cons in
-       (cons V1306
-        (cons and
-         (cons shen-then
-          (cons (cons shen-pop (cons shen-the (cons shen-stack ())))
-           ())))))))))
-  ((= () V1306)
-   (cons call (cons shen-the (cons shen-continuation (cons V1307 ())))))
-  (true
-   (cons shen-rename
-    (cons shen-the
-     (cons shen-variables
-      (cons in
-       (cons V1306
-        (cons and
-         (cons shen-then
-          (cons
-           (cons call
-            (cons shen-the (cons shen-continuation (cons V1307 ()))))
-           ())))))))))))
-
-(defun shen-make_mu_application (V1308 V1309)
- (cond
-  ((and (cons? V1308)
-    (and (= shen-mu (hd V1308))
-     (and (cons? (tl V1308))
-      (and (= () (hd (tl V1308)))
-       (and (cons? (tl (tl V1308)))
-        (and (= () (tl (tl (tl V1308)))) (= () V1309)))))))
-   (hd (tl (tl V1308))))
-  ((and (cons? V1308)
-    (and (= shen-mu (hd V1308))
-     (and (cons? (tl V1308))
-      (and (cons? (hd (tl V1308)))
-       (and (cons? (tl (tl V1308)))
-        (and (= () (tl (tl (tl V1308)))) (cons? V1309)))))))
-   (cons
-    (cons shen-mu
-     (cons (hd (hd (tl V1308)))
-      (cons
-       (shen-make_mu_application
-        (cons shen-mu (cons (tl (hd (tl V1308))) (tl (tl V1308)))) (tl V1309))
-       ())))
-    (cons (hd V1309) ())))
-  (true (shen-sys-error shen-make_mu_application))))
-
-(defun shen-mu_reduction (V1316 V1317)
- (cond
-  ((and (cons? V1316)
-    (and (cons? (hd V1316))
-     (and (= shen-mu (hd (hd V1316)))
-      (and (cons? (tl (hd V1316)))
-       (and (cons? (hd (tl (hd V1316))))
-        (and (= mode (hd (hd (tl (hd V1316)))))
-         (and (cons? (tl (hd (tl (hd V1316)))))
-          (and (cons? (tl (tl (hd (tl (hd V1316))))))
-           (and (= () (tl (tl (tl (hd (tl (hd V1316)))))))
-            (and (cons? (tl (tl (hd V1316))))
-             (and (= () (tl (tl (tl (hd V1316)))))
-              (and (cons? (tl V1316)) (= () (tl (tl V1316)))))))))))))))
-   (shen-mu_reduction
-    (cons
-     (cons shen-mu (cons (hd (tl (hd (tl (hd V1316))))) (tl (tl (hd V1316)))))
-     (tl V1316))
-    (hd (tl (tl (hd (tl (hd V1316))))))))
-  ((and (cons? V1316)
-    (and (cons? (hd V1316))
-     (and (= shen-mu (hd (hd V1316)))
-      (and (cons? (tl (hd V1316)))
-       (and (cons? (tl (tl (hd V1316))))
-        (and (= () (tl (tl (tl (hd V1316)))))
-         (and (cons? (tl V1316))
-          (and (= () (tl (tl V1316))) (= _ (hd (tl (hd V1316))))))))))))
-   (shen-mu_reduction (hd (tl (tl (hd V1316)))) V1317))
-  ((and (cons? V1316)
-    (and (cons? (hd V1316))
-     (and (= shen-mu (hd (hd V1316)))
-      (and (cons? (tl (hd V1316)))
-       (and (cons? (tl (tl (hd V1316))))
-        (and (= () (tl (tl (tl (hd V1316)))))
-         (and (cons? (tl V1316))
-          (and (= () (tl (tl V1316)))
-           (shen-ephemeral_variable? (hd (tl (hd V1316)))
-            (hd (tl V1316)))))))))))
-   (subst (hd (tl V1316)) (hd (tl (hd V1316)))
-    (shen-mu_reduction (hd (tl (tl (hd V1316)))) V1317)))
-  ((and (cons? V1316)
-    (and (cons? (hd V1316))
-     (and (= shen-mu (hd (hd V1316)))
-      (and (cons? (tl (hd V1316)))
-       (and (cons? (tl (tl (hd V1316))))
-        (and (= () (tl (tl (tl (hd V1316)))))
-         (and (cons? (tl V1316))
-          (and (= () (tl (tl V1316)))
-           (variable? (hd (tl (hd V1316))))))))))))
-   (cons let
-    (cons (hd (tl (hd V1316)))
-     (cons shen-be
-      (cons (hd (tl V1316))
-       (cons in
-        (cons (shen-mu_reduction (hd (tl (tl (hd V1316)))) V1317) ())))))))
-  ((and (cons? V1316)
-    (and (cons? (hd V1316))
-     (and (= shen-mu (hd (hd V1316)))
-      (and (cons? (tl (hd V1316)))
-       (and (cons? (tl (tl (hd V1316))))
-        (and (= () (tl (tl (tl (hd V1316)))))
-         (and (cons? (tl V1316))
-          (and (= () (tl (tl V1316)))
-           (and (= - V1317)
-            (shen-prolog_constant? (hd (tl (hd V1316)))))))))))))
-   (let Z (gensym V)
-    (cons let
-     (cons Z
-      (cons shen-be
-       (cons
-        (cons shen-the
-         (cons shen-result
-          (cons shen-of (cons shen-dereferencing (tl V1316)))))
-        (cons in
-         (cons
-          (cons if
-           (cons
-            (cons Z
-             (cons is
-              (cons identical (cons shen-to (cons (hd (tl (hd V1316))) ())))))
-            (cons shen-then
-             (cons (shen-mu_reduction (hd (tl (tl (hd V1316)))) -)
-              (cons shen-else (cons (fail) ()))))))
-          ()))))))))
-  ((and (cons? V1316)
-    (and (cons? (hd V1316))
-     (and (= shen-mu (hd (hd V1316)))
-      (and (cons? (tl (hd V1316)))
-       (and (cons? (tl (tl (hd V1316))))
-        (and (= () (tl (tl (tl (hd V1316)))))
-         (and (cons? (tl V1316))
-          (and (= () (tl (tl V1316)))
-           (and (= + V1317)
-            (shen-prolog_constant? (hd (tl (hd V1316)))))))))))))
-   (let Z (gensym V)
-    (cons let
-     (cons Z
-      (cons shen-be
-       (cons
-        (cons shen-the
-         (cons shen-result
-          (cons shen-of (cons shen-dereferencing (tl V1316)))))
-        (cons in
-         (cons
-          (cons if
-           (cons
-            (cons Z
-             (cons is
-              (cons identical (cons shen-to (cons (hd (tl (hd V1316))) ())))))
-            (cons shen-then
-             (cons (shen-mu_reduction (hd (tl (tl (hd V1316)))) +)
-              (cons shen-else
-               (cons
-                (cons if
-                 (cons
-                  (cons Z (cons is (cons shen-a (cons shen-variable ()))))
-                  (cons shen-then
-                   (cons
-                    (cons bind
-                     (cons Z
-                      (cons shen-to
-                       (cons (hd (tl (hd V1316)))
-                        (cons in
-                         (cons (shen-mu_reduction (hd (tl (tl (hd V1316)))) +)
-                          ()))))))
-                    (cons shen-else (cons (fail) ()))))))
-                ()))))))
-          ()))))))))
-  ((and (cons? V1316)
-    (and (cons? (hd V1316))
-     (and (= shen-mu (hd (hd V1316)))
-      (and (cons? (tl (hd V1316)))
-       (and (cons? (hd (tl (hd V1316))))
-        (and (cons? (tl (tl (hd V1316))))
-         (and (= () (tl (tl (tl (hd V1316)))))
-          (and (cons? (tl V1316))
-           (and (= () (tl (tl V1316))) (= - V1317))))))))))
-   (let Z (gensym V)
-    (cons let
-     (cons Z
-      (cons shen-be
-       (cons
-        (cons shen-the
-         (cons shen-result
-          (cons shen-of (cons shen-dereferencing (tl V1316)))))
-        (cons in
-         (cons
-          (cons if
-           (cons
-            (cons Z
-             (cons is (cons shen-a (cons shen-non-empty (cons list ())))))
-            (cons shen-then
-             (cons
-              (shen-mu_reduction
-               (cons
-                (cons shen-mu
-                 (cons (hd (hd (tl (hd V1316))))
-                  (cons
-                   (cons
-                    (cons shen-mu
-                     (cons (tl (hd (tl (hd V1316)))) (tl (tl (hd V1316)))))
-                    (cons
-                     (cons shen-the (cons tail (cons shen-of (cons Z ()))))
-                     ()))
-                   ())))
-                (cons (cons shen-the (cons head (cons shen-of (cons Z ()))))
-                 ()))
-               -)
-              (cons shen-else (cons (fail) ()))))))
-          ()))))))))
-  ((and (cons? V1316)
-    (and (cons? (hd V1316))
-     (and (= shen-mu (hd (hd V1316)))
-      (and (cons? (tl (hd V1316)))
-       (and (cons? (hd (tl (hd V1316))))
-        (and (cons? (tl (tl (hd V1316))))
-         (and (= () (tl (tl (tl (hd V1316)))))
-          (and (cons? (tl V1316))
-           (and (= () (tl (tl V1316))) (= + V1317))))))))))
-   (let Z (gensym V)
-    (cons let
-     (cons Z
-      (cons shen-be
-       (cons
-        (cons shen-the
-         (cons shen-result
-          (cons shen-of (cons shen-dereferencing (tl V1316)))))
-        (cons in
-         (cons
-          (cons if
-           (cons
-            (cons Z
-             (cons is (cons shen-a (cons shen-non-empty (cons list ())))))
-            (cons shen-then
-             (cons
-              (shen-mu_reduction
-               (cons
-                (cons shen-mu
-                 (cons (hd (hd (tl (hd V1316))))
-                  (cons
-                   (cons
-                    (cons shen-mu
-                     (cons (tl (hd (tl (hd V1316)))) (tl (tl (hd V1316)))))
-                    (cons
-                     (cons shen-the (cons tail (cons shen-of (cons Z ()))))
-                     ()))
-                   ())))
-                (cons (cons shen-the (cons head (cons shen-of (cons Z ()))))
-                 ()))
-               +)
-              (cons shen-else
-               (cons
-                (cons if
-                 (cons
-                  (cons Z (cons is (cons shen-a (cons shen-variable ()))))
-                  (cons shen-then
-                   (cons
-                    (cons shen-rename
-                     (cons shen-the
-                      (cons shen-variables
-                       (cons in
-                        (cons (shen-extract_vars (hd (tl (hd V1316))))
-                         (cons and
-                          (cons shen-then
-                           (cons
-                            (cons bind
-                             (cons Z
-                              (cons shen-to
-                               (cons
-                                (shen-rcons_form
-                                 (shen-remove_modes (hd (tl (hd V1316)))))
-                                (cons in
-                                 (cons
-                                  (shen-mu_reduction (hd (tl (tl (hd V1316))))
-                                   +)
-                                  ()))))))
-                            ()))))))))
-                    (cons shen-else (cons (fail) ()))))))
-                ()))))))
-          ()))))))))
-  (true V1316)))
-
-(defun shen-rcons_form (V1318)
- (cond
-  ((cons? V1318)
-   (cons cons
-    (cons (shen-rcons_form (hd V1318))
-     (cons (shen-rcons_form (tl V1318)) ()))))
-  (true V1318)))
-
-(defun shen-remove_modes (V1319)
- (cond
-  ((and (cons? V1319)
-    (and (= mode (hd V1319))
-     (and (cons? (tl V1319))
-      (and (cons? (tl (tl V1319)))
-       (and (= + (hd (tl (tl V1319)))) (= () (tl (tl (tl V1319)))))))))
-   (shen-remove_modes (hd (tl V1319))))
-  ((and (cons? V1319)
-    (and (= mode (hd V1319))
-     (and (cons? (tl V1319))
-      (and (cons? (tl (tl V1319)))
-       (and (= - (hd (tl (tl V1319)))) (= () (tl (tl (tl V1319)))))))))
-   (shen-remove_modes (hd (tl V1319))))
-  ((cons? V1319)
-   (cons (shen-remove_modes (hd V1319)) (shen-remove_modes (tl V1319))))
-  (true V1319)))
-
-(defun shen-ephemeral_variable? (V1320 V1321)
- (and (variable? V1320) (variable? V1321)))
-
-(defun shen-prolog_constant? (V1330) (cond ((cons? V1330) false) (true true)))
-
-(defun shen-aum_to_shen (V1331)
- (cond
-  ((and (cons? V1331)
-    (and (= let (hd V1331))
-     (and (cons? (tl V1331))
-      (and (cons? (tl (tl V1331)))
-       (and (= shen-be (hd (tl (tl V1331))))
-        (and (cons? (tl (tl (tl V1331))))
-         (and (cons? (tl (tl (tl (tl V1331)))))
-          (and (= in (hd (tl (tl (tl (tl V1331))))))
-           (and (cons? (tl (tl (tl (tl (tl V1331))))))
-            (= () (tl (tl (tl (tl (tl (tl V1331))))))))))))))))
-   (cons let
-    (cons (hd (tl V1331))
-     (cons (shen-aum_to_shen (hd (tl (tl (tl V1331)))))
-      (cons (shen-aum_to_shen (hd (tl (tl (tl (tl (tl V1331))))))) ())))))
-  ((and (cons? V1331)
-    (and (= shen-the (hd V1331))
-     (and (cons? (tl V1331))
-      (and (= shen-result (hd (tl V1331)))
-       (and (cons? (tl (tl V1331)))
-        (and (= shen-of (hd (tl (tl V1331))))
-         (and (cons? (tl (tl (tl V1331))))
-          (and (= shen-dereferencing (hd (tl (tl (tl V1331)))))
-           (and (cons? (tl (tl (tl (tl V1331)))))
-            (= () (tl (tl (tl (tl (tl V1331)))))))))))))))
-   (cons shen-lazyderef
-    (cons (shen-aum_to_shen (hd (tl (tl (tl (tl V1331))))))
-     (cons ProcessN ()))))
-  ((and (cons? V1331)
-    (and (= if (hd V1331))
-     (and (cons? (tl V1331))
-      (and (cons? (tl (tl V1331)))
-       (and (= shen-then (hd (tl (tl V1331))))
-        (and (cons? (tl (tl (tl V1331))))
-         (and (cons? (tl (tl (tl (tl V1331)))))
-          (and (= shen-else (hd (tl (tl (tl (tl V1331))))))
-           (and (cons? (tl (tl (tl (tl (tl V1331))))))
-            (= () (tl (tl (tl (tl (tl (tl V1331))))))))))))))))
-   (cons if
-    (cons (shen-aum_to_shen (hd (tl V1331)))
-     (cons (shen-aum_to_shen (hd (tl (tl (tl V1331)))))
-      (cons (shen-aum_to_shen (hd (tl (tl (tl (tl (tl V1331))))))) ())))))
-  ((and (cons? V1331)
-    (and (cons? (tl V1331))
-     (and (= is (hd (tl V1331)))
-      (and (cons? (tl (tl V1331)))
-       (and (= shen-a (hd (tl (tl V1331))))
-        (and (cons? (tl (tl (tl V1331))))
-         (and (= shen-variable (hd (tl (tl (tl V1331)))))
-          (= () (tl (tl (tl (tl V1331))))))))))))
-   (cons shen-pvar? (cons (hd V1331) ())))
-  ((and (cons? V1331)
-    (and (cons? (tl V1331))
-     (and (= is (hd (tl V1331)))
-      (and (cons? (tl (tl V1331)))
-       (and (= shen-a (hd (tl (tl V1331))))
-        (and (cons? (tl (tl (tl V1331))))
-         (and (= shen-non-empty (hd (tl (tl (tl V1331)))))
-          (and (cons? (tl (tl (tl (tl V1331)))))
-           (and (= list (hd (tl (tl (tl (tl V1331))))))
-            (= () (tl (tl (tl (tl (tl V1331)))))))))))))))
-   (cons cons? (cons (hd V1331) ())))
-  ((and (cons? V1331)
-    (and (= shen-rename (hd V1331))
-     (and (cons? (tl V1331))
-      (and (= shen-the (hd (tl V1331)))
-       (and (cons? (tl (tl V1331)))
-        (and (= shen-variables (hd (tl (tl V1331))))
-         (and (cons? (tl (tl (tl V1331))))
-          (and (= in (hd (tl (tl (tl V1331)))))
-           (and (cons? (tl (tl (tl (tl V1331)))))
-            (and (= () (hd (tl (tl (tl (tl V1331))))))
-             (and (cons? (tl (tl (tl (tl (tl V1331))))))
-              (and (= and (hd (tl (tl (tl (tl (tl V1331)))))))
-               (and (cons? (tl (tl (tl (tl (tl (tl V1331)))))))
-                (and (= shen-then (hd (tl (tl (tl (tl (tl (tl V1331))))))))
-                 (and (cons? (tl (tl (tl (tl (tl (tl (tl V1331))))))))
-                  (= ()
-                   (tl
-                    (tl (tl (tl (tl (tl (tl (tl V1331))))))))))))))))))))))))
-   (shen-aum_to_shen (hd (tl (tl (tl (tl (tl (tl (tl V1331))))))))))
-  ((and (cons? V1331)
-    (and (= shen-rename (hd V1331))
-     (and (cons? (tl V1331))
-      (and (= shen-the (hd (tl V1331)))
-       (and (cons? (tl (tl V1331)))
-        (and (= shen-variables (hd (tl (tl V1331))))
-         (and (cons? (tl (tl (tl V1331))))
-          (and (= in (hd (tl (tl (tl V1331)))))
-           (and (cons? (tl (tl (tl (tl V1331)))))
-            (and (cons? (hd (tl (tl (tl (tl V1331))))))
-             (and (cons? (tl (tl (tl (tl (tl V1331))))))
-              (and (= and (hd (tl (tl (tl (tl (tl V1331)))))))
-               (and (cons? (tl (tl (tl (tl (tl (tl V1331)))))))
-                (and (= shen-then (hd (tl (tl (tl (tl (tl (tl V1331))))))))
-                 (and (cons? (tl (tl (tl (tl (tl (tl (tl V1331))))))))
-                  (= ()
-                   (tl
-                    (tl (tl (tl (tl (tl (tl (tl V1331))))))))))))))))))))))))
-   (cons let
-    (cons (hd (hd (tl (tl (tl (tl V1331))))))
-     (cons (cons shen-newpv (cons ProcessN ()))
-      (cons
-       (shen-aum_to_shen
-        (cons shen-rename
-         (cons shen-the
-          (cons shen-variables
-           (cons in
-            (cons (tl (hd (tl (tl (tl (tl V1331))))))
-             (tl (tl (tl (tl (tl V1331)))))))))))
-       ())))))
-  ((and (cons? V1331)
-    (and (= bind (hd V1331))
-     (and (cons? (tl V1331))
-      (and (cons? (tl (tl V1331)))
-       (and (= shen-to (hd (tl (tl V1331))))
-        (and (cons? (tl (tl (tl V1331))))
-         (and (cons? (tl (tl (tl (tl V1331)))))
-          (and (= in (hd (tl (tl (tl (tl V1331))))))
-           (and (cons? (tl (tl (tl (tl (tl V1331))))))
-            (= () (tl (tl (tl (tl (tl (tl V1331))))))))))))))))
-   (cons do
-    (cons
-     (cons shen-bindv
-      (cons (hd (tl V1331))
-       (cons (shen-chwild (hd (tl (tl (tl V1331))))) (cons ProcessN ()))))
-     (cons
-      (cons let
-       (cons Result
-        (cons (shen-aum_to_shen (hd (tl (tl (tl (tl (tl V1331)))))))
-         (cons
-          (cons do
-           (cons (cons shen-unbindv (cons (hd (tl V1331)) (cons ProcessN ())))
-            (cons Result ())))
-          ()))))
-      ()))))
-  ((and (cons? V1331)
-    (and (cons? (tl V1331))
-     (and (= is (hd (tl V1331)))
-      (and (cons? (tl (tl V1331)))
-       (and (= identical (hd (tl (tl V1331))))
-        (and (cons? (tl (tl (tl V1331))))
-         (and (= shen-to (hd (tl (tl (tl V1331)))))
-          (and (cons? (tl (tl (tl (tl V1331)))))
-           (= () (tl (tl (tl (tl (tl V1331))))))))))))))
-   (cons = (cons (hd (tl (tl (tl (tl V1331))))) (cons (hd V1331) ()))))
-  ((= V1331 (fail)) false)
-  ((and (cons? V1331)
-    (and (= shen-the (hd V1331))
-     (and (cons? (tl V1331))
-      (and (= head (hd (tl V1331)))
-       (and (cons? (tl (tl V1331)))
-        (and (= shen-of (hd (tl (tl V1331))))
-         (and (cons? (tl (tl (tl V1331))))
-          (= () (tl (tl (tl (tl V1331))))))))))))
-   (cons hd (tl (tl (tl V1331)))))
-  ((and (cons? V1331)
-    (and (= shen-the (hd V1331))
-     (and (cons? (tl V1331))
-      (and (= tail (hd (tl V1331)))
-       (and (cons? (tl (tl V1331)))
-        (and (= shen-of (hd (tl (tl V1331))))
-         (and (cons? (tl (tl (tl V1331))))
-          (= () (tl (tl (tl (tl V1331))))))))))))
-   (cons tl (tl (tl (tl V1331)))))
-  ((and (cons? V1331)
-    (and (= shen-pop (hd V1331))
-     (and (cons? (tl V1331))
-      (and (= shen-the (hd (tl V1331)))
-       (and (cons? (tl (tl V1331)))
-        (and (= shen-stack (hd (tl (tl V1331))))
-         (= () (tl (tl (tl V1331))))))))))
-   (cons do
-    (cons (cons shen-incinfs ())
-     (cons (cons thaw (cons Continuation ())) ()))))
-  ((and (cons? V1331)
-    (and (= call (hd V1331))
-     (and (cons? (tl V1331))
-      (and (= shen-the (hd (tl V1331)))
-       (and (cons? (tl (tl V1331)))
-        (and (= shen-continuation (hd (tl (tl V1331))))
-         (and (cons? (tl (tl (tl V1331))))
-          (= () (tl (tl (tl (tl V1331))))))))))))
-   (cons do
-    (cons (cons shen-incinfs ())
-     (cons
-      (shen-call_the_continuation (shen-chwild (hd (tl (tl (tl V1331)))))
-       ProcessN Continuation)
-      ()))))
-  (true V1331)))
-
-(defun shen-chwild (V1332)
- (cond ((= V1332 _) (cons shen-newpv (cons ProcessN ())))
-  ((cons? V1332) (map (lambda V1333 (shen-chwild V1333)) V1332)) (true V1332)))
-
-(defun shen-newpv (V1334)
- (let Count+1 (+ (<-address (value shen-*varcounter*) V1334) 1)
-  (let IncVar (address-> (value shen-*varcounter*) V1334 Count+1)
-   (let Vector (<-address (value shen-*prologvectors*) V1334)
-    (let ResizeVectorIfNeeded
-     (if (= Count+1 (limit Vector)) (shen-resizeprocessvector V1334 Count+1)
-      shen-skip)
-     (shen-mk-pvar Count+1))))))
-
-(defun shen-resizeprocessvector (V1335 V1336)
- (let Vector (<-address (value shen-*prologvectors*) V1335)
-  (let BigVector (shen-resize-vector Vector (+ V1336 V1336) shen--null-)
-   (address-> (value shen-*prologvectors*) V1335 BigVector))))
-
-(defun shen-resize-vector (V1337 V1338 V1339)
- (let BigVector (address-> (absvector (+ 1 V1338)) 0 V1338)
-  (shen-copy-vector V1337 BigVector (limit V1337) V1338 V1339)))
-
-(defun shen-copy-vector (V1340 V1341 V1342 V1343 V1344)
- (shen-copy-vector-stage-2 (+ 1 V1342) (+ V1343 1) V1344
-  (shen-copy-vector-stage-1 1 V1340 V1341 (+ 1 V1342))))
-
-(defun shen-copy-vector-stage-1 (V1347 V1348 V1349 V1350)
- (cond ((= V1350 V1347) V1349)
-  (true
-   (shen-copy-vector-stage-1 (+ 1 V1347) V1348
-    (address-> V1349 V1347 (<-address V1348 V1347)) V1350))))
-
-(defun shen-copy-vector-stage-2 (V1354 V1355 V1356 V1357)
- (cond ((= V1355 V1354) V1357)
-  (true
-   (shen-copy-vector-stage-2 (+ V1354 1) V1355 V1356
-    (address-> V1357 V1354 V1356)))))
-
-(defun shen-mk-pvar (V1359)
- (address-> (address-> (absvector 2) 0 shen-pvar) 1 V1359))
-
-(defun shen-pvar? (V1360)
- (and (absvector? V1360) (= (<-address V1360 0) shen-pvar)))
-
-(defun shen-bindv (V1361 V1362 V1363)
- (let Vector (<-address (value shen-*prologvectors*) V1363)
-  (address-> Vector (<-address V1361 1) V1362)))
-
-(defun shen-unbindv (V1364 V1365)
- (let Vector (<-address (value shen-*prologvectors*) V1365)
-  (address-> Vector (<-address V1364 1) shen--null-)))
-
-(defun shen-incinfs () (set shen-*infs* (+ 1 (value shen-*infs*))))
-
-(defun shen-call_the_continuation (V1366 V1367 V1368)
- (cond
-  ((and (cons? V1366) (and (cons? (hd V1366)) (= () (tl V1366))))
-   (cons (hd (hd V1366))
-    (append (tl (hd V1366)) (cons V1367 (cons V1368 ())))))
-  ((and (cons? V1366) (cons? (hd V1366)))
-   (let NewContinuation (shen-newcontinuation (tl V1366) V1367 V1368)
-    (cons (hd (hd V1366))
-     (append (tl (hd V1366)) (cons V1367 (cons NewContinuation ()))))))
-  (true (shen-sys-error shen-call_the_continuation))))
-
-(defun shen-newcontinuation (V1369 V1370 V1371)
- (cond ((= () V1369) V1371)
-  ((and (cons? V1369) (cons? (hd V1369)))
-   (cons freeze
-    (cons
-     (cons (hd (hd V1369))
-      (append (tl (hd V1369))
-       (cons V1370 (cons (shen-newcontinuation (tl V1369) V1370 V1371) ()))))
-     ())))
-  (true (shen-sys-error shen-newcontinuation))))
-
-(defun return (V1376 V1377 V1378) (shen-deref V1376 V1377))
-
-(defun shen-measure&return (V1383 V1384 V1385)
- (do (intoutput "~A inferences~%" (@p (value shen-*infs*) ()))
-  (shen-deref V1383 V1384)))
-
-(defun unify (V1386 V1387 V1388 V1389)
- (shen-lzy= (shen-lazyderef V1386 V1388) (shen-lazyderef V1387 V1388) V1388
-  V1389))
-
-(defun shen-lzy= (V1406 V1407 V1408 V1409)
- (cond ((= V1407 V1406) (thaw V1409))
-  ((shen-pvar? V1406) (bind V1406 V1407 V1408 V1409))
-  ((shen-pvar? V1407) (bind V1407 V1406 V1408 V1409))
-  ((and (cons? V1406) (cons? V1407))
-   (shen-lzy= (shen-lazyderef (hd V1406) V1408)
-    (shen-lazyderef (hd V1407) V1408) V1408
-    (freeze
-     (shen-lzy= (shen-lazyderef (tl V1406) V1408)
-      (shen-lazyderef (tl V1407) V1408) V1408 V1409))))
-  (true false)))
-
-(defun shen-deref (V1411 V1412)
- (cond
-  ((cons? V1411)
-   (cons (shen-deref (hd V1411) V1412) (shen-deref (tl V1411) V1412)))
-  (true
-   (if (shen-pvar? V1411)
-    (let Value (shen-valvector V1411 V1412)
-     (if (= Value shen--null-) V1411 (shen-deref Value V1412)))
-    V1411))))
-
-(defun shen-lazyderef (V1413 V1414)
- (if (shen-pvar? V1413)
-  (let Value (shen-valvector V1413 V1414)
-   (if (= Value shen--null-) V1413 (shen-lazyderef Value V1414)))
-  V1413))
-
-(defun shen-valvector (V1415 V1416)
- (<-address (<-address (value shen-*prologvectors*) V1416)
-  (<-address V1415 1)))
-
-(defun unify! (V1417 V1418 V1419 V1420)
- (shen-lzy=! (shen-lazyderef V1417 V1419) (shen-lazyderef V1418 V1419) V1419
-  V1420))
-
-(defun shen-lzy=! (V1437 V1438 V1439 V1440)
- (cond ((= V1438 V1437) (thaw V1440))
-  ((and (shen-pvar? V1437) (not (shen-occurs? V1437 (shen-deref V1438 V1439))))
-   (bind V1437 V1438 V1439 V1440))
-  ((and (shen-pvar? V1438) (not (shen-occurs? V1438 (shen-deref V1437 V1439))))
-   (bind V1438 V1437 V1439 V1440))
-  ((and (cons? V1437) (cons? V1438))
-   (shen-lzy=! (shen-lazyderef (hd V1437) V1439)
-    (shen-lazyderef (hd V1438) V1439) V1439
-    (freeze
-     (shen-lzy=! (shen-lazyderef (tl V1437) V1439)
-      (shen-lazyderef (tl V1438) V1439) V1439 V1440))))
-  (true false)))
-
-(defun shen-occurs? (V1450 V1451)
- (cond ((= V1451 V1450) true)
-  ((cons? V1451)
-   (or (shen-occurs? V1450 (hd V1451)) (shen-occurs? V1450 (tl V1451))))
-  (true false)))
-
-(defun identical (V1453 V1454 V1455 V1456)
- (shen-lzy== (shen-lazyderef V1453 V1455) (shen-lazyderef V1454 V1455) V1455
-  V1456))
-
-(defun shen-lzy== (V1473 V1474 V1475 V1476)
- (cond ((= V1474 V1473) (thaw V1476))
-  ((and (cons? V1473) (cons? V1474))
-   (shen-lzy== (shen-lazyderef (hd V1473) V1475)
-    (shen-lazyderef (hd V1474) V1475) V1475
-    (freeze (shen-lzy== (tl V1473) (tl V1474) V1475 V1476))))
-  (true false)))
-
-(defun shen-pvar (V1478) (intmake-string "Var~A" (@p (<-address V1478 1) ())))
-
-(defun bind (V1479 V1480 V1481 V1482)
- (do (shen-bindv V1479 V1480 V1481)
-  (let Result (thaw V1482) (do (shen-unbindv V1479 V1481) Result))))
-
-(defun fwhen (V1497 V1498 V1499)
- (cond ((= true V1497) (thaw V1499)) ((= false V1497) false)
-  (true (interror "fwhen expects a boolean: not ~S%" (@p V1497 ())))))
-
-(defun call (V1512 V1513 V1514)
- (cond
-  ((cons? V1512)
-   (shen-call-help
-    (shen-m_prolog_to_s-prolog_predicate (shen-lazyderef (hd V1512) V1513))
-    (tl V1512) V1513 V1514))
-  (true false)))
-
-(defun shen-call-help (V1515 V1516 V1517 V1518)
- (cond ((= () V1516) (V1515 V1517 V1518))
-  ((cons? V1516) (shen-call-help (V1515 (hd V1516)) (tl V1516) V1517 V1518))
-  (true (shen-sys-error shen-call-help))))
-
-(defun shen-intprolog (V1519)
- (cond
-  ((and (cons? V1519) (cons? (hd V1519)))
-   (let ProcessN (shen-start-new-prolog-process)
-    (shen-intprolog-help (hd (hd V1519))
-     (shen-insert-prolog-variables (cons (tl (hd V1519)) (cons (tl V1519) ()))
-      ProcessN)
-     ProcessN)))
-  (true (shen-sys-error shen-intprolog))))
-
-(defun shen-intprolog-help (V1520 V1521 V1522)
- (cond
-  ((and (cons? V1521) (and (cons? (tl V1521)) (= () (tl (tl V1521)))))
-   (shen-intprolog-help-help V1520 (hd V1521) (hd (tl V1521)) V1522))
-  (true (shen-sys-error shen-intprolog-help))))
-
-(defun shen-intprolog-help-help (V1523 V1524 V1525 V1526)
- (cond ((= () V1524) (V1523 V1526 (freeze (shen-call-rest V1525 V1526))))
-  ((cons? V1524)
-   (shen-intprolog-help-help (V1523 (hd V1524)) (tl V1524) V1525 V1526))
-  (true (shen-sys-error shen-intprolog-help-help))))
-
-(defun shen-call-rest (V1529 V1530)
- (cond ((= () V1529) true)
-  ((and (cons? V1529) (and (cons? (hd V1529)) (cons? (tl (hd V1529)))))
-   (shen-call-rest
-    (cons (cons ((hd (hd V1529)) (hd (tl (hd V1529)))) (tl (tl (hd V1529))))
-     (tl V1529))
-    V1530))
-  ((and (cons? V1529) (and (cons? (hd V1529)) (= () (tl (hd V1529)))))
-   ((hd (hd V1529)) V1530 (freeze (shen-call-rest (tl V1529) V1530))))
-  (true (shen-sys-error shen-call-rest))))
-
-(defun shen-start-new-prolog-process ()
- (let IncrementProcessCounter
-  (set shen-*process-counter* (+ 1 (value shen-*process-counter*)))
-  (shen-initialise-prolog IncrementProcessCounter)))
-
-(defun shen-insert-prolog-variables (V1531 V1532)
- (shen-insert-prolog-variables-help V1531 (shen-flatten V1531) V1532))
-
-(defun shen-insert-prolog-variables-help (V1537 V1538 V1539)
- (cond ((= () V1538) V1537)
-  ((and (cons? V1538) (variable? (hd V1538)))
-   (let V (shen-newpv V1539)
-    (let XV/Y (subst V (hd V1538) V1537)
-     (let Z-Y (remove (hd V1538) (tl V1538))
-      (shen-insert-prolog-variables-help XV/Y Z-Y V1539)))))
-  ((cons? V1538) (shen-insert-prolog-variables-help V1537 (tl V1538) V1539))
-  (true (shen-sys-error shen-insert-prolog-variables-help))))
-
-(defun shen-initialise-prolog (V1540)
- (let Vector
-  (address-> (value shen-*prologvectors*) V1540
-   (shen-fillvector (vector 10) 1 10 shen--null-))
-  (let Counter (address-> (value shen-*varcounter*) V1540 1) V1540)))
+(defun shen.prolog-error (V905 V906) (cond ((and (cons? V906) (and (cons? (tl V906)) (= () (tl (tl V906))))) (simple-error (cn "prolog syntax error in " (shen.app V905 (cn " here:
+
+ " (shen.app (shen.next-50 50 (hd V906)) "
+" shen.a)) shen.a)))) (true (simple-error (cn "prolog syntax error in " (shen.app V905 "
+" shen.a))))))
+
+(defun shen.next-50 (V911 V912) (cond ((= () V912) "") ((= 0 V911) "") ((cons? V912) (cn (shen.decons-string (hd V912)) (shen.next-50 (- V911 1) (tl V912)))) (true (shen.sys-error shen.next-50))))
+
+(defun shen.decons-string (V913) (cond ((and (cons? V913) (and (= cons (hd V913)) (and (cons? (tl V913)) (and (cons? (tl (tl V913))) (= () (tl (tl (tl V913)))))))) (shen.app (shen.eval-cons V913) " " shen.s)) (true (shen.app V913 " " shen.r))))
+
+(defun shen.insert-predicate (V914 V915) (cond ((and (cons? V915) (and (cons? (tl V915)) (= () (tl (tl V915))))) (cons (cons V914 (hd V915)) (cons :- (tl V915)))) (true (shen.sys-error shen.insert-predicate))))
+
+(defun shen.<predicate*> (V920) (let Result (if (cons? (hd V920)) (let Parse_X (hd (hd V920)) (shen.pair (hd (shen.pair (tl (hd V920)) (shen.hdtl V920))) Parse_X)) (fail)) (if (= Result (fail)) (fail) Result)))
+
+(defun shen.<clauses*> (V925) (let Result (let Parse_shen.<clause*> (shen.<clause*> V925) (if (not (= (fail) Parse_shen.<clause*>)) (let Parse_shen.<clauses*> (shen.<clauses*> Parse_shen.<clause*>) (if (not (= (fail) Parse_shen.<clauses*>)) (shen.pair (hd Parse_shen.<clauses*>) (cons (shen.hdtl Parse_shen.<clause*>) (shen.hdtl Parse_shen.<clauses*>))) (fail))) (fail))) (if (= Result (fail)) (let Result (let Parse_<e> (<e> V925) (if (not (= (fail) Parse_<e>)) (shen.pair (hd Parse_<e>) (append (shen.hdtl Parse_<e>) ())) (fail))) (if (= Result (fail)) (fail) Result)) Result)))
+
+(defun shen.<clause*> (V930) (let Result (let Parse_shen.<head*> (shen.<head*> V930) (if (not (= (fail) Parse_shen.<head*>)) (if (and (cons? (hd Parse_shen.<head*>)) (= <-- (hd (hd Parse_shen.<head*>)))) (let Parse_shen.<body*> (shen.<body*> (shen.pair (tl (hd Parse_shen.<head*>)) (shen.hdtl Parse_shen.<head*>))) (if (not (= (fail) Parse_shen.<body*>)) (let Parse_shen.<end*> (shen.<end*> Parse_shen.<body*>) (if (not (= (fail) Parse_shen.<end*>)) (shen.pair (hd Parse_shen.<end*>) (cons (shen.hdtl Parse_shen.<head*>) (cons (shen.hdtl Parse_shen.<body*>) ()))) (fail))) (fail))) (fail)) (fail))) (if (= Result (fail)) (fail) Result)))
+
+(defun shen.<head*> (V935) (let Result (let Parse_shen.<term*> (shen.<term*> V935) (if (not (= (fail) Parse_shen.<term*>)) (let Parse_shen.<head*> (shen.<head*> Parse_shen.<term*>) (if (not (= (fail) Parse_shen.<head*>)) (shen.pair (hd Parse_shen.<head*>) (cons (shen.hdtl Parse_shen.<term*>) (shen.hdtl Parse_shen.<head*>))) (fail))) (fail))) (if (= Result (fail)) (let Result (let Parse_<e> (<e> V935) (if (not (= (fail) Parse_<e>)) (shen.pair (hd Parse_<e>) (append (shen.hdtl Parse_<e>) ())) (fail))) (if (= Result (fail)) (fail) Result)) Result)))
+
+(defun shen.<term*> (V940) (let Result (if (cons? (hd V940)) (let Parse_X (hd (hd V940)) (if (and (not (= <-- Parse_X)) (shen.legitimate-term? Parse_X)) (shen.pair (hd (shen.pair (tl (hd V940)) (shen.hdtl V940))) (shen.eval-cons Parse_X)) (fail))) (fail)) (if (= Result (fail)) (fail) Result)))
+
+(defun shen.legitimate-term? (V945) (cond ((and (cons? V945) (and (= cons (hd V945)) (and (cons? (tl V945)) (and (cons? (tl (tl V945))) (= () (tl (tl (tl V945)))))))) (and (shen.legitimate-term? (hd (tl V945))) (shen.legitimate-term? (hd (tl (tl V945)))))) ((and (cons? V945) (and (= mode (hd V945)) (and (cons? (tl V945)) (and (cons? (tl (tl V945))) (and (= + (hd (tl (tl V945)))) (= () (tl (tl (tl V945))))))))) (shen.legitimate-term? (hd (tl V945)))) ((and (cons? V945) (and (= mode (hd V945)) (and (cons? (tl V945)) (and (cons? (tl (tl V945))) (and (= - (hd (tl (tl V945)))) (= () (tl (tl (tl V945))))))))) (shen.legitimate-term? (hd (tl V945)))) ((cons? V945) false) (true true)))
+
+(defun shen.eval-cons (V946) (cond ((and (cons? V946) (and (= cons (hd V946)) (and (cons? (tl V946)) (and (cons? (tl (tl V946))) (= () (tl (tl (tl V946)))))))) (cons (shen.eval-cons (hd (tl V946))) (shen.eval-cons (hd (tl (tl V946)))))) ((and (cons? V946) (and (= mode (hd V946)) (and (cons? (tl V946)) (and (cons? (tl (tl V946))) (= () (tl (tl (tl V946)))))))) (cons mode (cons (shen.eval-cons (hd (tl V946))) (tl (tl V946))))) (true V946)))
+
+(defun shen.<body*> (V951) (let Result (let Parse_shen.<literal*> (shen.<literal*> V951) (if (not (= (fail) Parse_shen.<literal*>)) (let Parse_shen.<body*> (shen.<body*> Parse_shen.<literal*>) (if (not (= (fail) Parse_shen.<body*>)) (shen.pair (hd Parse_shen.<body*>) (cons (shen.hdtl Parse_shen.<literal*>) (shen.hdtl Parse_shen.<body*>))) (fail))) (fail))) (if (= Result (fail)) (let Result (let Parse_<e> (<e> V951) (if (not (= (fail) Parse_<e>)) (shen.pair (hd Parse_<e>) (append (shen.hdtl Parse_<e>) ())) (fail))) (if (= Result (fail)) (fail) Result)) Result)))
+
+(defun shen.<literal*> (V956) (let Result (if (and (cons? (hd V956)) (= ! (hd (hd V956)))) (shen.pair (hd (shen.pair (tl (hd V956)) (shen.hdtl V956))) (cons cut (cons (intern "Throwcontrol") ()))) (fail)) (if (= Result (fail)) (let Result (if (cons? (hd V956)) (let Parse_X (hd (hd V956)) (if (cons? Parse_X) (shen.pair (hd (shen.pair (tl (hd V956)) (shen.hdtl V956))) Parse_X) (fail))) (fail)) (if (= Result (fail)) (fail) Result)) Result)))
+
+(defun shen.<end*> (V961) (let Result (if (cons? (hd V961)) (let Parse_X (hd (hd V961)) (if (= Parse_X ;) (shen.pair (hd (shen.pair (tl (hd V961)) (shen.hdtl V961))) Parse_X) (fail))) (fail)) (if (= Result (fail)) (fail) Result)))
+
+(defun cut (V962 V963 V964) (let Result (thaw V964) (if (= Result false) V962 Result)))
+
+(defun shen.insert_modes (V965) (cond ((and (cons? V965) (and (= mode (hd V965)) (and (cons? (tl V965)) (and (cons? (tl (tl V965))) (= () (tl (tl (tl V965)))))))) V965) ((= () V965) ()) ((cons? V965) (cons (cons mode (cons (hd V965) (cons + ()))) (cons mode (cons (shen.insert_modes (tl V965)) (cons - ()))))) (true V965)))
+
+(defun shen.s-prolog (V966) (map (lambda V892 (eval V892)) (shen.prolog->shen V966)))
+
+(defun shen.prolog->shen (V967) (map shen.compile_prolog_procedure (shen.group_clauses (map shen.s-prolog_clause (mapcan shen.head_abstraction V967)))))
+
+(defun shen.s-prolog_clause (V968) (cond ((and (cons? V968) (and (cons? (tl V968)) (and (= :- (hd (tl V968))) (and (cons? (tl (tl V968))) (= () (tl (tl (tl V968)))))))) (cons (hd V968) (cons :- (cons (map shen.s-prolog_literal (hd (tl (tl V968)))) ())))) (true (shen.sys-error shen.s-prolog_clause))))
+
+(defun shen.head_abstraction (V969) (cond ((and (cons? V969) (and (cons? (tl V969)) (and (= :- (hd (tl V969))) (and (cons? (tl (tl V969))) (and (= () (tl (tl (tl V969)))) (< (shen.complexity_head (hd V969)) (value shen.*maxcomplexity*))))))) (cons V969 ())) ((and (cons? V969) (and (cons? (hd V969)) (and (cons? (tl V969)) (and (= :- (hd (tl V969))) (and (cons? (tl (tl V969))) (= () (tl (tl (tl V969))))))))) (let Terms (map (lambda Y (gensym V)) (tl (hd V969))) (let XTerms (shen.rcons_form (shen.remove_modes (tl (hd V969)))) (let Literal (cons unify (cons (shen.cons_form Terms) (cons XTerms ()))) (let Clause (cons (cons (hd (hd V969)) Terms) (cons :- (cons (cons Literal (hd (tl (tl V969)))) ()))) (cons Clause ())))))) (true (shen.sys-error shen.head_abstraction))))
+
+(defun shen.complexity_head (V974) (cond ((cons? V974) (shen.product (map shen.complexity (tl V974)))) (true (shen.sys-error shen.complexity_head))))
+
+(defun shen.complexity (V982) (cond ((and (cons? V982) (and (= mode (hd V982)) (and (cons? (tl V982)) (and (cons? (hd (tl V982))) (and (= mode (hd (hd (tl V982)))) (and (cons? (tl (hd (tl V982)))) (and (cons? (tl (tl (hd (tl V982))))) (and (= () (tl (tl (tl (hd (tl V982)))))) (and (cons? (tl (tl V982))) (= () (tl (tl (tl V982))))))))))))) (shen.complexity (hd (tl V982)))) ((and (cons? V982) (and (= mode (hd V982)) (and (cons? (tl V982)) (and (cons? (hd (tl V982))) (and (cons? (tl (tl V982))) (and (= + (hd (tl (tl V982)))) (= () (tl (tl (tl V982)))))))))) (* 2 (* (shen.complexity (cons mode (cons (hd (hd (tl V982))) (tl (tl V982))))) (shen.complexity (cons mode (cons (tl (hd (tl V982))) (tl (tl V982)))))))) ((and (cons? V982) (and (= mode (hd V982)) (and (cons? (tl V982)) (and (cons? (hd (tl V982))) (and (cons? (tl (tl V982))) (and (= - (hd (tl (tl V982)))) (= () (tl (tl (tl V982)))))))))) (* (shen.complexity (cons mode (cons (hd (hd (tl V982))) (tl (tl V982))))) (shen.complexity (cons mode (cons (tl (hd (tl V982))) (tl (tl V982))))))) ((and (cons? V982) (and (= mode (hd V982)) (and (cons? (tl V982)) (and (cons? (tl (tl V982))) (and (= () (tl (tl (tl V982)))) (variable? (hd (tl V982)))))))) 1) ((and (cons? V982) (and (= mode (hd V982)) (and (cons? (tl V982)) (and (cons? (tl (tl V982))) (and (= + (hd (tl (tl V982)))) (= () (tl (tl (tl V982))))))))) 2) ((and (cons? V982) (and (= mode (hd V982)) (and (cons? (tl V982)) (and (cons? (tl (tl V982))) (and (= - (hd (tl (tl V982)))) (= () (tl (tl (tl V982))))))))) 1) (true (shen.complexity (cons mode (cons V982 (cons + ())))))))
+
+(defun shen.product (V983) (cond ((= () V983) 1) ((cons? V983) (* (hd V983) (shen.product (tl V983)))) (true (shen.sys-error shen.product))))
+
+(defun shen.s-prolog_literal (V984) (cond ((and (cons? V984) (and (= is (hd V984)) (and (cons? (tl V984)) (and (cons? (tl (tl V984))) (= () (tl (tl (tl V984)))))))) (cons bind (cons (hd (tl V984)) (cons (shen.insert_deref (hd (tl (tl V984)))) ())))) ((and (cons? V984) (and (= when (hd V984)) (and (cons? (tl V984)) (= () (tl (tl V984)))))) (cons fwhen (cons (shen.insert_deref (hd (tl V984))) ()))) ((and (cons? V984) (and (= bind (hd V984)) (and (cons? (tl V984)) (and (cons? (tl (tl V984))) (= () (tl (tl (tl V984)))))))) (cons bind (cons (hd (tl V984)) (cons (shen.insert_lazyderef (hd (tl (tl V984)))) ())))) ((and (cons? V984) (and (= fwhen (hd V984)) (and (cons? (tl V984)) (= () (tl (tl V984)))))) (cons fwhen (cons (shen.insert_lazyderef (hd (tl V984))) ()))) ((cons? V984) (cons (shen.m_prolog_to_s-prolog_predicate (hd V984)) (tl V984))) (true (shen.sys-error shen.s-prolog_literal))))
+
+(defun shen.insert_deref (V985) (cond ((variable? V985) (cons shen.deref (cons V985 (cons ProcessN ())))) ((cons? V985) (cons (shen.insert_deref (hd V985)) (shen.insert_deref (tl V985)))) (true V985)))
+
+(defun shen.insert_lazyderef (V986) (cond ((variable? V986) (cons shen.lazyderef (cons V986 (cons ProcessN ())))) ((cons? V986) (cons (shen.insert_lazyderef (hd V986)) (shen.insert_lazyderef (tl V986)))) (true V986)))
+
+(defun shen.m_prolog_to_s-prolog_predicate (V987) (cond ((= = V987) unify) ((= =! V987) unify!) ((= == V987) identical) (true V987)))
+
+(defun shen.group_clauses (V988) (cond ((= () V988) ()) ((cons? V988) (let Group (shen.collect (lambda X (shen.same_predicate? (hd V988) X)) V988) (let Rest (difference V988 Group) (cons Group (shen.group_clauses Rest))))) (true (shen.sys-error shen.group_clauses))))
+
+(defun shen.collect (V991 V992) (cond ((= () V992) ()) ((cons? V992) (if (V991 (hd V992)) (cons (hd V992) (shen.collect V991 (tl V992))) (shen.collect V991 (tl V992)))) (true (shen.sys-error shen.collect))))
+
+(defun shen.same_predicate? (V1009 V1010) (cond ((and (cons? V1009) (and (cons? (hd V1009)) (and (cons? V1010) (cons? (hd V1010))))) (= (hd (hd V1009)) (hd (hd V1010)))) (true (shen.sys-error shen.same_predicate?))))
+
+(defun shen.compile_prolog_procedure (V1011) (let F (shen.procedure_name V1011) (let Shen (shen.clauses-to-shen F V1011) Shen)))
+
+(defun shen.procedure_name (V1024) (cond ((and (cons? V1024) (and (cons? (hd V1024)) (cons? (hd (hd V1024))))) (hd (hd (hd V1024)))) (true (shen.sys-error shen.procedure_name))))
+
+(defun shen.clauses-to-shen (V1025 V1026) (let Linear (map shen.linearise-clause V1026) (let Arity (shen.prolog-aritycheck V1025 (map (lambda V893 (head V893)) V1026)) (let Parameters (shen.parameters Arity) (let AUM_instructions (map (lambda X (shen.aum X Parameters)) Linear) (let Code (shen.catch-cut (shen.nest-disjunct (map shen.aum_to_shen AUM_instructions))) (let ShenDef (cons define (cons V1025 (append Parameters (append (cons ProcessN (cons Continuation ())) (cons -> (cons Code ())))))) ShenDef)))))))
+
+(defun shen.catch-cut (V1027) (cond ((not (shen.occurs? cut V1027)) V1027) (true (cons let (cons Throwcontrol (cons (cons shen.catchpoint ()) (cons (cons shen.cutpoint (cons Throwcontrol (cons V1027 ()))) ())))))))
+
+(defun shen.catchpoint () (set shen.*catch* (+ 1 (value shen.*catch*))))
+
+(defun shen.cutpoint (V1032 V1033) (cond ((= V1033 V1032) false) (true V1033)))
+
+(defun shen.nest-disjunct (V1035) (cond ((and (cons? V1035) (= () (tl V1035))) (hd V1035)) ((cons? V1035) (shen.lisp-or (hd V1035) (shen.nest-disjunct (tl V1035)))) (true (shen.sys-error shen.nest-disjunct))))
+
+(defun shen.lisp-or (V1036 V1037) (cons let (cons Case (cons V1036 (cons (cons if (cons (cons = (cons Case (cons false ()))) (cons V1037 (cons Case ())))) ())))))
+
+(defun shen.prolog-aritycheck (V1040 V1041) (cond ((and (cons? V1041) (= () (tl V1041))) (- (length (hd V1041)) 1)) ((and (cons? V1041) (cons? (tl V1041))) (if (= (length (hd V1041)) (length (hd (tl V1041)))) (shen.prolog-aritycheck V1040 (tl V1041)) (simple-error (cn "arity error in prolog procedure " (shen.app (cons V1040 ()) "
+" shen.a))))) (true (shen.sys-error shen.prolog-aritycheck))))
+
+(defun shen.linearise-clause (V1042) (cond ((and (cons? V1042) (and (cons? (tl V1042)) (and (= :- (hd (tl V1042))) (and (cons? (tl (tl V1042))) (= () (tl (tl (tl V1042)))))))) (let Linear (shen.linearise (cons (hd V1042) (tl (tl V1042)))) (shen.clause_form Linear))) (true (shen.sys-error shen.linearise-clause))))
+
+(defun shen.clause_form (V1043) (cond ((and (cons? V1043) (and (cons? (tl V1043)) (= () (tl (tl V1043))))) (cons (shen.explicit_modes (hd V1043)) (cons :- (cons (shen.cf_help (hd (tl V1043))) ())))) (true (shen.sys-error shen.clause_form))))
+
+(defun shen.explicit_modes (V1044) (cond ((cons? V1044) (cons (hd V1044) (map shen.em_help (tl V1044)))) (true (shen.sys-error shen.explicit_modes))))
+
+(defun shen.em_help (V1045) (cond ((and (cons? V1045) (and (= mode (hd V1045)) (and (cons? (tl V1045)) (and (cons? (tl (tl V1045))) (= () (tl (tl (tl V1045)))))))) V1045) (true (cons mode (cons V1045 (cons + ()))))))
+
+(defun shen.cf_help (V1046) (cond ((and (cons? V1046) (and (= where (hd V1046)) (and (cons? (tl V1046)) (and (cons? (hd (tl V1046))) (and (= = (hd (hd (tl V1046)))) (and (cons? (tl (hd (tl V1046)))) (and (cons? (tl (tl (hd (tl V1046))))) (and (= () (tl (tl (tl (hd (tl V1046)))))) (and (cons? (tl (tl V1046))) (= () (tl (tl (tl V1046))))))))))))) (cons (cons (if (value shen.*occurs*) unify! unify) (tl (hd (tl V1046)))) (shen.cf_help (hd (tl (tl V1046)))))) (true V1046)))
+
+(defun occurs-check (V1051) (cond ((= + V1051) (set shen.*occurs* true)) ((= - V1051) (set shen.*occurs* false)) (true (simple-error "occurs-check expects + or -
+"))))
+
+(defun shen.aum (V1052 V1053) (cond ((and (cons? V1052) (and (cons? (hd V1052)) (and (cons? (tl V1052)) (and (= :- (hd (tl V1052))) (and (cons? (tl (tl V1052))) (= () (tl (tl (tl V1052))))))))) (let MuApplication (shen.make_mu_application (cons shen.mu (cons (tl (hd V1052)) (cons (shen.continuation_call (tl (hd V1052)) (hd (tl (tl V1052)))) ()))) V1053) (shen.mu_reduction MuApplication +))) (true (shen.sys-error shen.aum))))
+
+(defun shen.continuation_call (V1054 V1055) (let VTerms (cons ProcessN (shen.extract_vars V1054)) (let VBody (shen.extract_vars V1055) (let Free (remove Throwcontrol (difference VBody VTerms)) (shen.cc_help Free V1055)))))
+
+(defun remove (V1056 V1057) (shen.remove-h V1056 V1057 ()))
+
+(defun shen.remove-h (V1060 V1061 V1062) (cond ((= () V1061) (reverse V1062)) ((and (cons? V1061) (= (hd V1061) V1060)) (shen.remove-h (hd V1061) (tl V1061) V1062)) ((cons? V1061) (shen.remove-h V1060 (tl V1061) (cons (hd V1061) V1062))) (true (shen.sys-error shen.remove-h))))
+
+(defun shen.cc_help (V1064 V1065) (cond ((and (= () V1064) (= () V1065)) (cons shen.pop (cons shen.the (cons shen.stack ())))) ((= () V1065) (cons shen.rename (cons shen.the (cons shen.variables (cons in (cons V1064 (cons and (cons shen.then (cons (cons shen.pop (cons shen.the (cons shen.stack ()))) ()))))))))) ((= () V1064) (cons call (cons shen.the (cons shen.continuation (cons V1065 ()))))) (true (cons shen.rename (cons shen.the (cons shen.variables (cons in (cons V1064 (cons and (cons shen.then (cons (cons call (cons shen.the (cons shen.continuation (cons V1065 ())))) ())))))))))))
+
+(defun shen.make_mu_application (V1066 V1067) (cond ((and (cons? V1066) (and (= shen.mu (hd V1066)) (and (cons? (tl V1066)) (and (= () (hd (tl V1066))) (and (cons? (tl (tl V1066))) (and (= () (tl (tl (tl V1066)))) (= () V1067))))))) (hd (tl (tl V1066)))) ((and (cons? V1066) (and (= shen.mu (hd V1066)) (and (cons? (tl V1066)) (and (cons? (hd (tl V1066))) (and (cons? (tl (tl V1066))) (and (= () (tl (tl (tl V1066)))) (cons? V1067))))))) (cons (cons shen.mu (cons (hd (hd (tl V1066))) (cons (shen.make_mu_application (cons shen.mu (cons (tl (hd (tl V1066))) (tl (tl V1066)))) (tl V1067)) ()))) (cons (hd V1067) ()))) (true (shen.sys-error shen.make_mu_application))))
+
+(defun shen.mu_reduction (V1074 V1075) (cond ((and (cons? V1074) (and (cons? (hd V1074)) (and (= shen.mu (hd (hd V1074))) (and (cons? (tl (hd V1074))) (and (cons? (hd (tl (hd V1074)))) (and (= mode (hd (hd (tl (hd V1074))))) (and (cons? (tl (hd (tl (hd V1074))))) (and (cons? (tl (tl (hd (tl (hd V1074)))))) (and (= () (tl (tl (tl (hd (tl (hd V1074))))))) (and (cons? (tl (tl (hd V1074)))) (and (= () (tl (tl (tl (hd V1074))))) (and (cons? (tl V1074)) (= () (tl (tl V1074))))))))))))))) (shen.mu_reduction (cons (cons shen.mu (cons (hd (tl (hd (tl (hd V1074))))) (tl (tl (hd V1074))))) (tl V1074)) (hd (tl (tl (hd (tl (hd V1074)))))))) ((and (cons? V1074) (and (cons? (hd V1074)) (and (= shen.mu (hd (hd V1074))) (and (cons? (tl (hd V1074))) (and (cons? (tl (tl (hd V1074)))) (and (= () (tl (tl (tl (hd V1074))))) (and (cons? (tl V1074)) (and (= () (tl (tl V1074))) (= _ (hd (tl (hd V1074)))))))))))) (shen.mu_reduction (hd (tl (tl (hd V1074)))) V1075)) ((and (cons? V1074) (and (cons? (hd V1074)) (and (= shen.mu (hd (hd V1074))) (and (cons? (tl (hd V1074))) (and (cons? (tl (tl (hd V1074)))) (and (= () (tl (tl (tl (hd V1074))))) (and (cons? (tl V1074)) (and (= () (tl (tl V1074))) (shen.ephemeral_variable? (hd (tl (hd V1074))) (hd (tl V1074))))))))))) (subst (hd (tl V1074)) (hd (tl (hd V1074))) (shen.mu_reduction (hd (tl (tl (hd V1074)))) V1075))) ((and (cons? V1074) (and (cons? (hd V1074)) (and (= shen.mu (hd (hd V1074))) (and (cons? (tl (hd V1074))) (and (cons? (tl (tl (hd V1074)))) (and (= () (tl (tl (tl (hd V1074))))) (and (cons? (tl V1074)) (and (= () (tl (tl V1074))) (variable? (hd (tl (hd V1074)))))))))))) (cons let (cons (hd (tl (hd V1074))) (cons shen.be (cons (hd (tl V1074)) (cons in (cons (shen.mu_reduction (hd (tl (tl (hd V1074)))) V1075) ()))))))) ((and (cons? V1074) (and (cons? (hd V1074)) (and (= shen.mu (hd (hd V1074))) (and (cons? (tl (hd V1074))) (and (cons? (tl (tl (hd V1074)))) (and (= () (tl (tl (tl (hd V1074))))) (and (cons? (tl V1074)) (and (= () (tl (tl V1074))) (and (= - V1075) (shen.prolog_constant? (hd (tl (hd V1074))))))))))))) (let Z (gensym V) (cons let (cons Z (cons shen.be (cons (cons shen.the (cons shen.result (cons shen.of (cons shen.dereferencing (tl V1074))))) (cons in (cons (cons if (cons (cons Z (cons is (cons identical (cons shen.to (cons (hd (tl (hd V1074))) ()))))) (cons shen.then (cons (shen.mu_reduction (hd (tl (tl (hd V1074)))) -) (cons shen.else (cons shen.failed! ())))))) ())))))))) ((and (cons? V1074) (and (cons? (hd V1074)) (and (= shen.mu (hd (hd V1074))) (and (cons? (tl (hd V1074))) (and (cons? (tl (tl (hd V1074)))) (and (= () (tl (tl (tl (hd V1074))))) (and (cons? (tl V1074)) (and (= () (tl (tl V1074))) (and (= + V1075) (shen.prolog_constant? (hd (tl (hd V1074))))))))))))) (let Z (gensym V) (cons let (cons Z (cons shen.be (cons (cons shen.the (cons shen.result (cons shen.of (cons shen.dereferencing (tl V1074))))) (cons in (cons (cons if (cons (cons Z (cons is (cons identical (cons shen.to (cons (hd (tl (hd V1074))) ()))))) (cons shen.then (cons (shen.mu_reduction (hd (tl (tl (hd V1074)))) +) (cons shen.else (cons (cons if (cons (cons Z (cons is (cons shen.a (cons shen.variable ())))) (cons shen.then (cons (cons bind (cons Z (cons shen.to (cons (hd (tl (hd V1074))) (cons in (cons (shen.mu_reduction (hd (tl (tl (hd V1074)))) +) ())))))) (cons shen.else (cons shen.failed! ())))))) ())))))) ())))))))) ((and (cons? V1074) (and (cons? (hd V1074)) (and (= shen.mu (hd (hd V1074))) (and (cons? (tl (hd V1074))) (and (cons? (hd (tl (hd V1074)))) (and (cons? (tl (tl (hd V1074)))) (and (= () (tl (tl (tl (hd V1074))))) (and (cons? (tl V1074)) (and (= () (tl (tl V1074))) (= - V1075)))))))))) (let Z (gensym V) (cons let (cons Z (cons shen.be (cons (cons shen.the (cons shen.result (cons shen.of (cons shen.dereferencing (tl V1074))))) (cons in (cons (cons if (cons (cons Z (cons is (cons shen.a (cons shen.non-empty (cons list ()))))) (cons shen.then (cons (shen.mu_reduction (cons (cons shen.mu (cons (hd (hd (tl (hd V1074)))) (cons (cons (cons shen.mu (cons (tl (hd (tl (hd V1074)))) (tl (tl (hd V1074))))) (cons (cons shen.the (cons tail (cons shen.of (cons Z ())))) ())) ()))) (cons (cons shen.the (cons head (cons shen.of (cons Z ())))) ())) -) (cons shen.else (cons shen.failed! ())))))) ())))))))) ((and (cons? V1074) (and (cons? (hd V1074)) (and (= shen.mu (hd (hd V1074))) (and (cons? (tl (hd V1074))) (and (cons? (hd (tl (hd V1074)))) (and (cons? (tl (tl (hd V1074)))) (and (= () (tl (tl (tl (hd V1074))))) (and (cons? (tl V1074)) (and (= () (tl (tl V1074))) (= + V1075)))))))))) (let Z (gensym V) (cons let (cons Z (cons shen.be (cons (cons shen.the (cons shen.result (cons shen.of (cons shen.dereferencing (tl V1074))))) (cons in (cons (cons if (cons (cons Z (cons is (cons shen.a (cons shen.non-empty (cons list ()))))) (cons shen.then (cons (shen.mu_reduction (cons (cons shen.mu (cons (hd (hd (tl (hd V1074)))) (cons (cons (cons shen.mu (cons (tl (hd (tl (hd V1074)))) (tl (tl (hd V1074))))) (cons (cons shen.the (cons tail (cons shen.of (cons Z ())))) ())) ()))) (cons (cons shen.the (cons head (cons shen.of (cons Z ())))) ())) +) (cons shen.else (cons (cons if (cons (cons Z (cons is (cons shen.a (cons shen.variable ())))) (cons shen.then (cons (cons shen.rename (cons shen.the (cons shen.variables (cons in (cons (shen.extract_vars (hd (tl (hd V1074)))) (cons and (cons shen.then (cons (cons bind (cons Z (cons shen.to (cons (shen.rcons_form (shen.remove_modes (hd (tl (hd V1074))))) (cons in (cons (shen.mu_reduction (hd (tl (tl (hd V1074)))) +) ())))))) ())))))))) (cons shen.else (cons shen.failed! ())))))) ())))))) ())))))))) (true V1074)))
+
+(defun shen.rcons_form (V1076) (cond ((cons? V1076) (cons cons (cons (shen.rcons_form (hd V1076)) (cons (shen.rcons_form (tl V1076)) ())))) (true V1076)))
+
+(defun shen.remove_modes (V1077) (cond ((and (cons? V1077) (and (= mode (hd V1077)) (and (cons? (tl V1077)) (and (cons? (tl (tl V1077))) (and (= + (hd (tl (tl V1077)))) (= () (tl (tl (tl V1077))))))))) (shen.remove_modes (hd (tl V1077)))) ((and (cons? V1077) (and (= mode (hd V1077)) (and (cons? (tl V1077)) (and (cons? (tl (tl V1077))) (and (= - (hd (tl (tl V1077)))) (= () (tl (tl (tl V1077))))))))) (shen.remove_modes (hd (tl V1077)))) ((cons? V1077) (cons (shen.remove_modes (hd V1077)) (shen.remove_modes (tl V1077)))) (true V1077)))
+
+(defun shen.ephemeral_variable? (V1078 V1079) (and (variable? V1078) (variable? V1079)))
+
+(defun shen.prolog_constant? (V1088) (cond ((cons? V1088) false) (true true)))
+
+(defun shen.aum_to_shen (V1089) (cond ((and (cons? V1089) (and (= let (hd V1089)) (and (cons? (tl V1089)) (and (cons? (tl (tl V1089))) (and (= shen.be (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (cons? (tl (tl (tl (tl V1089))))) (and (= in (hd (tl (tl (tl (tl V1089)))))) (and (cons? (tl (tl (tl (tl (tl V1089)))))) (= () (tl (tl (tl (tl (tl (tl V1089)))))))))))))))) (cons let (cons (hd (tl V1089)) (cons (shen.aum_to_shen (hd (tl (tl (tl V1089))))) (cons (shen.aum_to_shen (hd (tl (tl (tl (tl (tl V1089))))))) ()))))) ((and (cons? V1089) (and (= shen.the (hd V1089)) (and (cons? (tl V1089)) (and (= shen.result (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.of (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (= shen.dereferencing (hd (tl (tl (tl V1089))))) (and (cons? (tl (tl (tl (tl V1089))))) (= () (tl (tl (tl (tl (tl V1089))))))))))))))) (cons shen.lazyderef (cons (shen.aum_to_shen (hd (tl (tl (tl (tl V1089)))))) (cons ProcessN ())))) ((and (cons? V1089) (and (= if (hd V1089)) (and (cons? (tl V1089)) (and (cons? (tl (tl V1089))) (and (= shen.then (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (cons? (tl (tl (tl (tl V1089))))) (and (= shen.else (hd (tl (tl (tl (tl V1089)))))) (and (cons? (tl (tl (tl (tl (tl V1089)))))) (= () (tl (tl (tl (tl (tl (tl V1089)))))))))))))))) (cons if (cons (shen.aum_to_shen (hd (tl V1089))) (cons (shen.aum_to_shen (hd (tl (tl (tl V1089))))) (cons (shen.aum_to_shen (hd (tl (tl (tl (tl (tl V1089))))))) ()))))) ((and (cons? V1089) (and (cons? (tl V1089)) (and (= is (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.a (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (= shen.variable (hd (tl (tl (tl V1089))))) (= () (tl (tl (tl (tl V1089)))))))))))) (cons shen.pvar? (cons (hd V1089) ()))) ((and (cons? V1089) (and (cons? (tl V1089)) (and (= is (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.a (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (= shen.non-empty (hd (tl (tl (tl V1089))))) (and (cons? (tl (tl (tl (tl V1089))))) (and (= list (hd (tl (tl (tl (tl V1089)))))) (= () (tl (tl (tl (tl (tl V1089))))))))))))))) (cons cons? (cons (hd V1089) ()))) ((and (cons? V1089) (and (= shen.rename (hd V1089)) (and (cons? (tl V1089)) (and (= shen.the (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.variables (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (= in (hd (tl (tl (tl V1089))))) (and (cons? (tl (tl (tl (tl V1089))))) (and (= () (hd (tl (tl (tl (tl V1089)))))) (and (cons? (tl (tl (tl (tl (tl V1089)))))) (and (= and (hd (tl (tl (tl (tl (tl V1089))))))) (and (cons? (tl (tl (tl (tl (tl (tl V1089))))))) (and (= shen.then (hd (tl (tl (tl (tl (tl (tl V1089)))))))) (and (cons? (tl (tl (tl (tl (tl (tl (tl V1089)))))))) (= () (tl (tl (tl (tl (tl (tl (tl (tl V1089)))))))))))))))))))))))) (shen.aum_to_shen (hd (tl (tl (tl (tl (tl (tl (tl V1089)))))))))) ((and (cons? V1089) (and (= shen.rename (hd V1089)) (and (cons? (tl V1089)) (and (= shen.the (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.variables (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (= in (hd (tl (tl (tl V1089))))) (and (cons? (tl (tl (tl (tl V1089))))) (and (cons? (hd (tl (tl (tl (tl V1089)))))) (and (cons? (tl (tl (tl (tl (tl V1089)))))) (and (= and (hd (tl (tl (tl (tl (tl V1089))))))) (and (cons? (tl (tl (tl (tl (tl (tl V1089))))))) (and (= shen.then (hd (tl (tl (tl (tl (tl (tl V1089)))))))) (and (cons? (tl (tl (tl (tl (tl (tl (tl V1089)))))))) (= () (tl (tl (tl (tl (tl (tl (tl (tl V1089)))))))))))))))))))))))) (cons let (cons (hd (hd (tl (tl (tl (tl V1089)))))) (cons (cons shen.newpv (cons ProcessN ())) (cons (shen.aum_to_shen (cons shen.rename (cons shen.the (cons shen.variables (cons in (cons (tl (hd (tl (tl (tl (tl V1089)))))) (tl (tl (tl (tl (tl V1089))))))))))) ()))))) ((and (cons? V1089) (and (= bind (hd V1089)) (and (cons? (tl V1089)) (and (cons? (tl (tl V1089))) (and (= shen.to (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (cons? (tl (tl (tl (tl V1089))))) (and (= in (hd (tl (tl (tl (tl V1089)))))) (and (cons? (tl (tl (tl (tl (tl V1089)))))) (= () (tl (tl (tl (tl (tl (tl V1089)))))))))))))))) (cons do (cons (cons shen.bindv (cons (hd (tl V1089)) (cons (shen.chwild (hd (tl (tl (tl V1089))))) (cons ProcessN ())))) (cons (cons let (cons Result (cons (shen.aum_to_shen (hd (tl (tl (tl (tl (tl V1089))))))) (cons (cons do (cons (cons shen.unbindv (cons (hd (tl V1089)) (cons ProcessN ()))) (cons Result ()))) ())))) ())))) ((and (cons? V1089) (and (cons? (tl V1089)) (and (= is (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= identical (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (and (= shen.to (hd (tl (tl (tl V1089))))) (and (cons? (tl (tl (tl (tl V1089))))) (= () (tl (tl (tl (tl (tl V1089)))))))))))))) (cons = (cons (hd (tl (tl (tl (tl V1089))))) (cons (hd V1089) ())))) ((= shen.failed! V1089) false) ((and (cons? V1089) (and (= shen.the (hd V1089)) (and (cons? (tl V1089)) (and (= head (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.of (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (= () (tl (tl (tl (tl V1089)))))))))))) (cons hd (tl (tl (tl V1089))))) ((and (cons? V1089) (and (= shen.the (hd V1089)) (and (cons? (tl V1089)) (and (= tail (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.of (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (= () (tl (tl (tl (tl V1089)))))))))))) (cons tl (tl (tl (tl V1089))))) ((and (cons? V1089) (and (= shen.pop (hd V1089)) (and (cons? (tl V1089)) (and (= shen.the (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.stack (hd (tl (tl V1089)))) (= () (tl (tl (tl V1089)))))))))) (cons do (cons (cons shen.incinfs ()) (cons (cons thaw (cons Continuation ())) ())))) ((and (cons? V1089) (and (= call (hd V1089)) (and (cons? (tl V1089)) (and (= shen.the (hd (tl V1089))) (and (cons? (tl (tl V1089))) (and (= shen.continuation (hd (tl (tl V1089)))) (and (cons? (tl (tl (tl V1089)))) (= () (tl (tl (tl (tl V1089)))))))))))) (cons do (cons (cons shen.incinfs ()) (cons (shen.call_the_continuation (shen.chwild (hd (tl (tl (tl V1089))))) ProcessN Continuation) ())))) (true V1089)))
+
+(defun shen.chwild (V1090) (cond ((= V1090 _) (cons shen.newpv (cons ProcessN ()))) ((cons? V1090) (map shen.chwild V1090)) (true V1090)))
+
+(defun shen.newpv (V1091) (let Count+1 (+ (<-address (value shen.*varcounter*) V1091) 1) (let IncVar (address-> (value shen.*varcounter*) V1091 Count+1) (let Vector (<-address (value shen.*prologvectors*) V1091) (let ResizeVectorIfNeeded (if (= Count+1 (limit Vector)) (shen.resizeprocessvector V1091 Count+1) shen.skip) (shen.mk-pvar Count+1))))))
+
+(defun shen.resizeprocessvector (V1092 V1093) (let Vector (<-address (value shen.*prologvectors*) V1092) (let BigVector (shen.resize-vector Vector (+ V1093 V1093) shen.-null-) (address-> (value shen.*prologvectors*) V1092 BigVector))))
+
+(defun shen.resize-vector (V1094 V1095 V1096) (let BigVector (address-> (absvector (+ 1 V1095)) 0 V1095) (shen.copy-vector V1094 BigVector (limit V1094) V1095 V1096)))
+
+(defun shen.copy-vector (V1097 V1098 V1099 V1100 V1101) (shen.copy-vector-stage-2 (+ 1 V1099) (+ V1100 1) V1101 (shen.copy-vector-stage-1 1 V1097 V1098 (+ 1 V1099))))
+
+(defun shen.copy-vector-stage-1 (V1104 V1105 V1106 V1107) (cond ((= V1107 V1104) V1106) (true (shen.copy-vector-stage-1 (+ 1 V1104) V1105 (address-> V1106 V1104 (<-address V1105 V1104)) V1107))))
+
+(defun shen.copy-vector-stage-2 (V1111 V1112 V1113 V1114) (cond ((= V1112 V1111) V1114) (true (shen.copy-vector-stage-2 (+ V1111 1) V1112 V1113 (address-> V1114 V1111 V1113)))))
+
+(defun shen.mk-pvar (V1116) (address-> (address-> (absvector 2) 0 shen.pvar) 1 V1116))
+
+(defun shen.pvar? (V1117) (and (absvector? V1117) (= (<-address V1117 0) shen.pvar)))
+
+(defun shen.bindv (V1118 V1119 V1120) (let Vector (<-address (value shen.*prologvectors*) V1120) (address-> Vector (<-address V1118 1) V1119)))
+
+(defun shen.unbindv (V1121 V1122) (let Vector (<-address (value shen.*prologvectors*) V1122) (address-> Vector (<-address V1121 1) shen.-null-)))
+
+(defun shen.incinfs () (set shen.*infs* (+ 1 (value shen.*infs*))))
+
+(defun shen.call_the_continuation (V1123 V1124 V1125) (cond ((and (cons? V1123) (and (cons? (hd V1123)) (= () (tl V1123)))) (cons (hd (hd V1123)) (append (tl (hd V1123)) (cons V1124 (cons V1125 ()))))) ((and (cons? V1123) (cons? (hd V1123))) (let NewContinuation (shen.newcontinuation (tl V1123) V1124 V1125) (cons (hd (hd V1123)) (append (tl (hd V1123)) (cons V1124 (cons NewContinuation ())))))) (true (shen.sys-error shen.call_the_continuation))))
+
+(defun shen.newcontinuation (V1126 V1127 V1128) (cond ((= () V1126) V1128) ((and (cons? V1126) (cons? (hd V1126))) (cons freeze (cons (cons (hd (hd V1126)) (append (tl (hd V1126)) (cons V1127 (cons (shen.newcontinuation (tl V1126) V1127 V1128) ())))) ()))) (true (shen.sys-error shen.newcontinuation))))
+
+(defun return (V1133 V1134 V1135) (shen.deref V1133 V1134))
+
+(defun shen.measure&return (V1140 V1141 V1142) (do (pr (shen.app (value shen.*infs*) " inferences
+" shen.a) (stoutput)) (shen.deref V1140 V1141)))
+
+(defun unify (V1143 V1144 V1145 V1146) (shen.lzy= (shen.lazyderef V1143 V1145) (shen.lazyderef V1144 V1145) V1145 V1146))
+
+(defun shen.lzy= (V1163 V1164 V1165 V1166) (cond ((= V1164 V1163) (thaw V1166)) ((shen.pvar? V1163) (bind V1163 V1164 V1165 V1166)) ((shen.pvar? V1164) (bind V1164 V1163 V1165 V1166)) ((and (cons? V1163) (cons? V1164)) (shen.lzy= (shen.lazyderef (hd V1163) V1165) (shen.lazyderef (hd V1164) V1165) V1165 (freeze (shen.lzy= (shen.lazyderef (tl V1163) V1165) (shen.lazyderef (tl V1164) V1165) V1165 V1166)))) (true false)))
+
+(defun shen.deref (V1168 V1169) (cond ((cons? V1168) (cons (shen.deref (hd V1168) V1169) (shen.deref (tl V1168) V1169))) (true (if (shen.pvar? V1168) (let Value (shen.valvector V1168 V1169) (if (= Value shen.-null-) V1168 (shen.deref Value V1169))) V1168))))
+
+(defun shen.lazyderef (V1170 V1171) (if (shen.pvar? V1170) (let Value (shen.valvector V1170 V1171) (if (= Value shen.-null-) V1170 (shen.lazyderef Value V1171))) V1170))
+
+(defun shen.valvector (V1172 V1173) (<-address (<-address (value shen.*prologvectors*) V1173) (<-address V1172 1)))
+
+(defun unify! (V1174 V1175 V1176 V1177) (shen.lzy=! (shen.lazyderef V1174 V1176) (shen.lazyderef V1175 V1176) V1176 V1177))
+
+(defun shen.lzy=! (V1194 V1195 V1196 V1197) (cond ((= V1195 V1194) (thaw V1197)) ((and (shen.pvar? V1194) (not (shen.occurs? V1194 (shen.deref V1195 V1196)))) (bind V1194 V1195 V1196 V1197)) ((and (shen.pvar? V1195) (not (shen.occurs? V1195 (shen.deref V1194 V1196)))) (bind V1195 V1194 V1196 V1197)) ((and (cons? V1194) (cons? V1195)) (shen.lzy=! (shen.lazyderef (hd V1194) V1196) (shen.lazyderef (hd V1195) V1196) V1196 (freeze (shen.lzy=! (shen.lazyderef (tl V1194) V1196) (shen.lazyderef (tl V1195) V1196) V1196 V1197)))) (true false)))
+
+(defun shen.occurs? (V1207 V1208) (cond ((= V1208 V1207) true) ((cons? V1208) (or (shen.occurs? V1207 (hd V1208)) (shen.occurs? V1207 (tl V1208)))) (true false)))
+
+(defun identical (V1210 V1211 V1212 V1213) (shen.lzy== (shen.lazyderef V1210 V1212) (shen.lazyderef V1211 V1212) V1212 V1213))
+
+(defun shen.lzy== (V1230 V1231 V1232 V1233) (cond ((= V1231 V1230) (thaw V1233)) ((and (cons? V1230) (cons? V1231)) (shen.lzy== (shen.lazyderef (hd V1230) V1232) (shen.lazyderef (hd V1231) V1232) V1232 (freeze (shen.lzy== (tl V1230) (tl V1231) V1232 V1233)))) (true false)))
+
+(defun shen.pvar (V1235) (cn "Var" (shen.app (<-address V1235 1) "" shen.a)))
+
+(defun bind (V1236 V1237 V1238 V1239) (do (shen.bindv V1236 V1237 V1238) (let Result (thaw V1239) (do (shen.unbindv V1236 V1238) Result))))
+
+(defun fwhen (V1254 V1255 V1256) (cond ((= true V1254) (thaw V1256)) ((= false V1254) false) (true (simple-error (cn "fwhen expects a boolean: not " (shen.app V1254 "%" shen.s))))))
+
+(defun call (V1269 V1270 V1271) (cond ((cons? V1269) (shen.call-help (shen.m_prolog_to_s-prolog_predicate (shen.lazyderef (hd V1269) V1270)) (tl V1269) V1270 V1271)) (true false)))
+
+(defun shen.call-help (V1272 V1273 V1274 V1275) (cond ((= () V1273) (V1272 V1274 V1275)) ((cons? V1273) (shen.call-help (V1272 (hd V1273)) (tl V1273) V1274 V1275)) (true (shen.sys-error shen.call-help))))
+
+(defun shen.intprolog (V1276) (cond ((and (cons? V1276) (cons? (hd V1276))) (let ProcessN (shen.start-new-prolog-process) (shen.intprolog-help (hd (hd V1276)) (shen.insert-prolog-variables (cons (tl (hd V1276)) (cons (tl V1276) ())) ProcessN) ProcessN))) (true (shen.sys-error shen.intprolog))))
+
+(defun shen.intprolog-help (V1277 V1278 V1279) (cond ((and (cons? V1278) (and (cons? (tl V1278)) (= () (tl (tl V1278))))) (shen.intprolog-help-help V1277 (hd V1278) (hd (tl V1278)) V1279)) (true (shen.sys-error shen.intprolog-help))))
+
+(defun shen.intprolog-help-help (V1280 V1281 V1282 V1283) (cond ((= () V1281) (V1280 V1283 (freeze (shen.call-rest V1282 V1283)))) ((cons? V1281) (shen.intprolog-help-help (V1280 (hd V1281)) (tl V1281) V1282 V1283)) (true (shen.sys-error shen.intprolog-help-help))))
+
+(defun shen.call-rest (V1286 V1287) (cond ((= () V1286) true) ((and (cons? V1286) (and (cons? (hd V1286)) (cons? (tl (hd V1286))))) (shen.call-rest (cons (cons ((hd (hd V1286)) (hd (tl (hd V1286)))) (tl (tl (hd V1286)))) (tl V1286)) V1287)) ((and (cons? V1286) (and (cons? (hd V1286)) (= () (tl (hd V1286))))) ((hd (hd V1286)) V1287 (freeze (shen.call-rest (tl V1286) V1287)))) (true (shen.sys-error shen.call-rest))))
+
+(defun shen.start-new-prolog-process () (let IncrementProcessCounter (set shen.*process-counter* (+ 1 (value shen.*process-counter*))) (shen.initialise-prolog IncrementProcessCounter)))
+
+(defun shen.insert-prolog-variables (V1288 V1289) (shen.insert-prolog-variables-help V1288 (shen.flatten V1288) V1289))
+
+(defun shen.insert-prolog-variables-help (V1294 V1295 V1296) (cond ((= () V1295) V1294) ((and (cons? V1295) (variable? (hd V1295))) (let V (shen.newpv V1296) (let XV/Y (subst V (hd V1295) V1294) (let Z-Y (remove (hd V1295) (tl V1295)) (shen.insert-prolog-variables-help XV/Y Z-Y V1296))))) ((cons? V1295) (shen.insert-prolog-variables-help V1294 (tl V1295) V1296)) (true (shen.sys-error shen.insert-prolog-variables-help))))
+
+(defun shen.initialise-prolog (V1297) (let Vector (address-> (value shen.*prologvectors*) V1297 (shen.fillvector (vector 10) 1 10 shen.-null-)) (let Counter (address-> (value shen.*varcounter*) V1297 1) V1297)))
+
+
 
