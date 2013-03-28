@@ -40,10 +40,18 @@ data Val
     | VStream Handle
     | VCont Exp
     | VErr UserErrorMsg
-    deriving Show
 
-instance Show (MV.IOVector Val) where
-    show _ = "Vector" -- TODO:
+instance Show Val where
+    show (VSym (Symbol s)) = s
+    show (VBool b) = if b then "true" else "false"
+    show (VStr s) = show s
+    show (VNum n) = show n
+    show (VList vals) = "(" ++ (unwords (map show vals)) ++ ")"
+    show VFun{} = "<function>"
+    show VVec{} = "<vector>"
+    show VStream{} = "<stream>"
+    show VCont{} = "<continuation>"
+    show VErr{} = "<error>"
 
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc
