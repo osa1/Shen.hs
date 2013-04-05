@@ -57,7 +57,7 @@ evalFiles :: [FilePath] -> Kl ()
 evalFiles [] = readAndEval
 evalFiles (path:paths) = do
     file <- liftIO $ readFile path
-    case parse exps "klambda" (alexScanTokens' file) of
+    case parse exps path (alexScanTokens' file) of
       Left err    -> liftIO $ print err
       Right exps' -> do
         forM_ exps' $ eval M.empty
