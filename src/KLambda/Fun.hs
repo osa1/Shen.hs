@@ -73,7 +73,11 @@ tl = StdFun $ \v -> do
   l :: [Val] <- ensureType v
   return $ if length l == 2 then l !! 1 else VList (tail l)
 
-consp = klEnsureType TyList
+consp = StdFun $ \v ->
+  let ret = VBool $ case v of
+                      VList lst -> length lst /= 0
+                      _ -> False
+   in return ret :: Kl Val
 
 -- Arithmetic
 -- --------------------------------------------------------
