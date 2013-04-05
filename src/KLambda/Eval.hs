@@ -37,7 +37,6 @@ evalKl env exp = do
   case parse exps "klambda" [val] of
     Left err   -> throwError $ KlParseError err
     Right args -> do
-      trace ("eval args: " ++ show args) (return ())
       vals <- mapM (eval env) args
       return $ last vals
 
@@ -95,7 +94,7 @@ eval env (EApp exp arg) = do
                        Just sv -> sv env arg
       VFun f -> apply f =<< eval env arg
       VSFun s -> s env arg
-      _ -> error "apply a non-function value"
+      _ -> error $ "apply a non-function value: " ++ show val
 
 eval env (EDefun (Symbol name) lambda) = do
     VFun c@Closure{} <- eval env lambda
