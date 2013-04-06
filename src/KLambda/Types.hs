@@ -28,13 +28,10 @@ data Exp
     | EBool Bool
     | EStr  String
     | ENum  Number
-    | EApp  Exp Exp
+    | EApp  Exp (Maybe Exp)
     | ELambda (Maybe Symbol) Exp
     | EIf Exp Exp Exp -- guard, then case, else case
     | EDefun Symbol Exp
-    -- Unit values/expressions are used in two places,
-    --  1) Function applications with no parameter
-    --  2) Non-exhaustive cond expressions
     | EUnit
     deriving Show
 
@@ -113,20 +110,23 @@ newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
 type SFun = LexEnv -> Exp -> Kl Val
 
 class KlFun a where
-    apply :: a -> Val -> Kl Val
+    apply :: a -> Maybe Val -> Kl Val
     arity :: a -> Int
 
 data Func = Closure LexEnv (Maybe Symbol) Exp
           | forall f. (KlFun f) => StdFun f
 
 instance KlFun (Val -> Kl Val) where
-    apply f e = f e
+    apply f Nothing = return $ VFun . StdFun $ f
+    apply f (Just e) = f e
     arity _ = 1
 instance KlFun (Val -> Val -> Kl Val) where
-    apply f e = return (VFun . StdFun $ f e)
+    apply f Nothing = return $ VFun . StdFun $ f
+    apply f (Just e) = return (VFun . StdFun $ f e)
     arity _ = 2
 instance KlFun (Val -> Val -> Val -> Kl Val) where
-    apply f e = return (VFun . StdFun $ f e)
+    apply f Nothing = return $ VFun . StdFun $ f
+    apply f (Just e) = return (VFun . StdFun $ f e)
     arity _ = 3
 
 instance Show Func where
@@ -160,11 +160,6 @@ instance EnsureType Bool where
     ensureType (VBool b) = return b
     ensureType notBool   =
       throwError TypeError{ foundTy = typeOf notBool, expectedTy = TyBool }
-
-{-instance EnsureType [Val] where
-    ensureType (VList l) = return l
-    ensureType notList =
-      throwError TypeError{ foundTy = typeOf notList, expectedTy = TyList }-}
 
 instance EnsureType Double where
     ensureType (VNum n) = return n
@@ -216,5 +211,4 @@ instance KlVal Char   where klVal = VStr . (:[])
 instance KlVal Double where klVal = VNum
 instance KlVal Symbol where klVal = VSym
 instance KlVal (MV.IOVector Val) where klVal = VVec
-{-instance KlVal a => KlVal [a]  where klVal a = VList $ map klVal a-}
 instance KlVal Handle where klVal = VStream

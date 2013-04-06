@@ -103,16 +103,16 @@ letE = listOf $ do
   name <- anySymbol
   val  <- exp
   body <- exp
-  return $ EApp (ELambda (Just name) body) val
+  return $ EApp (ELambda (Just name) body) (Just val)
 
 appE = listOf $ do
     fun  <- exp
     args <- many exp
     return $ if null args
-               then EApp fun EUnit
+               then EApp fun Nothing
                else mkApp fun args
   where mkApp f [] = f
-        mkApp f (a:as) = mkApp (EApp f a) as
+        mkApp f (a:as) = mkApp (EApp f (Just a)) as
 
 condE = listOf $ symbol "cond" >> mkIf <$> many case_
   where case_ = listOf $ (,) <$> exp <*> exp
