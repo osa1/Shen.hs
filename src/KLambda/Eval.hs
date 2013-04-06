@@ -1,5 +1,5 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 module KLambda.Eval where
 
 import KLambda.Types
@@ -13,8 +13,6 @@ import qualified Data.HashMap.Strict as M
 import Text.Parsec (parse)
 
 import Prelude hiding (exp, lookup)
-
-import Debug.Trace
 
 instance KlFun Func where
     apply (Closure env Nothing body) VUnit = eval env body
@@ -71,7 +69,6 @@ eval _ (EBool b) = return $ VBool b
 eval _ (EStr s)  = return $ VStr s
 eval _ (ENum n)  = return $ VNum n
 eval _ EUnit     = return $ VUnit
-eval _ EEmptyLst = return $ VList []
 eval env (ELambda param body) =
     return $ VFun (Closure env param body)
 eval env (EIf guard then_ else_) = do
@@ -88,7 +85,7 @@ eval env (EApp exp arg) = do
       VSym s -> do
         fun <- lookupFun' s
         case fun of
-          Just f -> apply f =<< eval env arg
+          Just f  -> apply f =<< eval env arg
           Nothing -> case M.lookup s specials of
                        Nothing -> throwError $ UnboundSymbol s
                        Just sv -> sv env arg

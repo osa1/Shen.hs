@@ -32,7 +32,7 @@ stdenv = (F.stdenv, M.fromList stdvars)
                   , ("*version*", VStr "TODO")
                   , ("*maximum-point-sequence-size*", VNum 100)
                   , ("*printer*", undefined)
-                  , ("*macros*", VList [])
+                  , ("*macros*", undefined)
                   ]
 
 readAndEval :: Kl ()
@@ -45,12 +45,12 @@ readAndEval = do
         liftIO $ print err
         readAndEval
       Right exps' -> do
-        val <- (liftM (Just . last . (++) [VList []]) $ mapM (eval M.empty) exps') `catchError` handler
-        case val of
-          Nothing   -> return ()
-          Just val' -> liftIO $ print val'
+        vals <- liftM Just (mapM (eval M.empty) exps') `catchError` handler
+        case vals of
+          Nothing    -> return ()
+          Just vals' -> liftIO $ print vals'
         readAndEval
-  where handler :: KlException -> Kl (Maybe Val)
+  where handler :: KlException -> Kl (Maybe [Val])
         handler err = liftIO (print err) >> return Nothing
 
 evalFiles :: [FilePath] -> Kl ()

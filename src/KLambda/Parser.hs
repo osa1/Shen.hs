@@ -63,8 +63,8 @@ instance KLambdaParser Val Val where
     symbol = Val.symbol
 
     unit = Val.satisfy f >> return ()
-      where f (VList []) = True
-            f _          = False
+      where f VUnit{} = True
+            f _       = False
 
     listOf = Val.listOf
 
@@ -140,7 +140,7 @@ ifE = listOf $ do
 exp :: KLambdaParser tokpos a => Parsec [tokpos] () Exp
 exp = choice
   [ boolE, stringE, numE, symbolE, try lambdaE, try defunE, try letE, try condE
-  , try orE, try andE, try ifE, try appE, unit >> return EEmptyLst
+  , try orE, try andE, try ifE, try appE, unit >> return EUnit
   ]
 
 exps :: KLambdaParser tokpos a => Parsec [tokpos] () [Exp]

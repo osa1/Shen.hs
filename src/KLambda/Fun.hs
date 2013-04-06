@@ -1,16 +1,16 @@
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# OPTIONS_GHC -Wall #-}
+{-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 module KLambda.Fun where
 
 import qualified Data.HashMap.Strict as M
 import qualified Data.Vector.Mutable as MV
 import qualified Data.Vector         as V
-import Control.Monad.IO.Class (liftIO)
-import Control.Monad.State (modify, gets)
-import Control.Monad.Error (throwError)
-import Control.Monad (zipWithM, liftM)
-import System.IO (IOMode(..), hGetChar, hClose, hPutStrLn, openFile)
-import System.IO.Error (tryIOError)
+import Control.Monad           (liftM, liftM2)
+import Control.Monad.IO.Class  (liftIO)
+import Control.Monad.State     (modify, gets)
+import Control.Monad.Error     (throwError)
+import System.IO               (IOMode(..), hGetChar, hClose, hPutStr, openFile)
+import System.IO.Error         (tryIOError)
 
 import KLambda.Types
 import KLambda.Env
@@ -18,66 +18,69 @@ import KLambda.Env
 returnKl :: a -> Kl a
 returnKl = return
 
-klEnsureType :: Type -> Func
-klEnsureType ty = StdFun $ \v -> returnKl . klVal $ typeOf v == ty
+type KlFun1 = Val -> Kl Val
+type KlFun2 = Val -> KlFun1
+type KlFun3 = Val -> KlFun2
+
+klEnsureType :: Type -> KlFun1
+klEnsureType ty v = returnKl . klVal $ typeOf v == ty
 
 -- String operations
 -- --------------------------------------------------------
 
-pos, tlstr, cn, str, strp, nToStr, strToN :: Func
-pos = StdFun $ \v1 v2 -> do
-  s :: String <- ensureType v1
-  n :: Double <- ensureType v2
-  return $ VStr [s !! floor n]
+pos :: KlFun2
+pos v1 v2 = do
+    s <- ensureType v1
+    n :: Double <- ensureType v2
+    return $ VStr [s !! floor n] :: Kl Val
 
-tlstr = StdFun $ \v -> do
-  s :: String <- ensureType v
-  return $ VStr (tail s)
+tlstr :: KlFun1
+tlstr v = do
+    s <- ensureType v
+    return $ VStr (tail s)
 
-cn = StdFun $ \v1 v2 -> do
-  s1 :: String <- ensureType v1
-  s2 :: String <- ensureType v2
-  return $ VStr (s1 ++ s2)
+cn :: KlFun2
+cn v1 v2 = do
+    s1 <- ensureType v1
+    s2 <- ensureType v2
+    return $ VStr (s1 ++ s2)
 
-str = StdFun $ \(v :: Val) -> returnKl $ VStr (show v)
+str :: KlFun1
+str v = returnKl $ VStr (show v)
 
+strp :: KlFun1
 strp = klEnsureType TyStr
 
-nToStr = StdFun $ \v -> do
-  n :: Double <- ensureType v
-  return $ VStr [toEnum $ floor n]
+nToStr :: KlFun1
+nToStr v = do
+    n :: Double <- ensureType v
+    return $ VStr [toEnum $ floor n]
 
-strToN = StdFun f
-  where f :: Val -> Kl Val
-        f (VStr s) = return $ VNum . fromIntegral . sum $ map fromEnum s
-        f (VNum n) = return $ VNum n
-        f _        = error "strToN on some other value"
+strToN :: KlFun1
+strToN (VStr s) = return $ VNum . fromIntegral . sum $ map fromEnum s
+strToN (VNum n) = return $ VNum n
+strToN _        = error "strToN on some other value"
 
 -- Lists
 -- --------------------------------------------------------
 
-cons, hd, tl, consp :: Func
-cons = StdFun f
-  where f :: Val -> Val -> Kl Val
-        f v1 v2 =
-          return $ case v2 of
-                     VList []  -> VList [v1, VList []]
-                     VList lst -> VList (v1:lst)
-                     notList   -> VList [v1, v2]
+cons :: KlFun2
+cons v1 v2 = return $ VList v1 v2
 
-hd = StdFun $ \v -> do
-  l :: [Val] <- ensureType v
-  return $ head l
+hd :: KlFun1
+hd v = case v of
+         VList v1 _ -> return v1
+         notVList   -> throwError TypeError{ foundTy = typeOf notVList, expectedTy = TyList }
 
-tl = StdFun $ \v -> do
-  l :: [Val] <- ensureType v
-  return $ if length l == 2 then l !! 1 else VList (tail l)
+tl :: KlFun1
+tl v = case v of
+         VList _ v2 -> return v2
+         notVList   -> throwError TypeError{ foundTy = typeOf notVList, expectedTy = TyList }
 
-consp = StdFun $ \v ->
-  let ret = VBool $ case v of
-                      VList lst -> length lst /= 0
-                      _ -> False
-   in return ret :: Kl Val
+consp :: KlFun1
+consp v = return . VBool $ case v of
+                             VList{} -> True
+                             _       -> False
 
 -- Arithmetic
 -- --------------------------------------------------------
@@ -89,18 +92,19 @@ mkArithFun op = StdFun $ \v1 v2 -> do
   return $ klVal (n1 `op` n2)
 
 numberp :: Func
-numberp = klEnsureType TyNum
+numberp = StdFun $ klEnsureType TyNum
 
 -- Assignments
 -- --------------------------------------------------------
 
-set', value :: Func
-set' = StdFun $ \v1 v2 -> do
-  s <- ensureType v1
-  modify $ \env -> insertSymEnv s v2 env
-  return v2
+set' :: KlFun2
+set' v1 v2 = do
+    s <- ensureType v1
+    modify $ \env -> insertSymEnv s v2 env
+    return v2
 
-value = StdFun $ \v -> do
+value :: KlFun1
+value v = do
   Symbol s <- ensureType v
   senv     <- gets symEnv
   case M.lookup s senv of
@@ -110,97 +114,100 @@ value = StdFun $ \v -> do
 -- Symbols
 -- --------------------------------------------------------
 
-intern :: Func
-intern = StdFun $ \v -> do
-  s :: String <- ensureType v
-  return $ (VSym . Symbol) s
+intern :: KlFun1
+intern v = do
+    s <- ensureType v
+    return $ (VSym . Symbol) s
 
 -- Vectors
 -- --------------------------------------------------------
 
-absvector, vecAssign, vecRead, vectorp :: Func
-absvector = StdFun $ \v -> do
-  n   <- ensureType v
-  vec <- liftIO $ MV.new n
-  return $ VVec vec
+absvector :: KlFun1
+absvector v = do
+    n   <- ensureType v
+    vec <- liftIO $ MV.new n
+    return $ VVec vec
 
-vecAssign = StdFun $ \vec idx (val :: Val) -> do
-  vec' <- ensureType vec
-  idx' <- ensureType idx
-  -- TODO: can we assume that Shen implementation in KLambda already does
-  -- the bound checking? if so we can use `unsafeWrite`.
-  liftIO $ MV.write vec' idx' val
-  return vec
+vecAssign :: KlFun3
+vecAssign vec idx val = do
+    vec' <- ensureType vec
+    idx' <- ensureType idx
+    -- TODO: can we assume that Shen implementation in KLambda already does
+    -- the bound checking? if so we can use `unsafeWrite`.
+    liftIO $ MV.write vec' idx' val
+    return vec
 
-vecRead = StdFun $ \vec idx -> do
-  vec' <- ensureType vec
-  idx' <- ensureType idx
-  -- TODO: same situation with `vecAssign`. `unsafeRead` can be used.
-  liftIO (MV.read vec' idx' :: IO Val)
+vecRead :: KlFun2
+vecRead vec idx = do
+    vec' <- ensureType vec
+    idx' <- ensureType idx
+    -- TODO: same situation with `vecAssign`. `unsafeRead` can be used.
+    liftIO (MV.read vec' idx' :: IO Val)
 
+vectorp :: KlFun1
 vectorp = klEnsureType TyVec
 
 -- Error handling
 -- --------------------------------------------------------
 
-simpleError, errorToString :: Func
+simpleError :: KlFun1
+simpleError s = do
+    msg <- ensureType s
+    throwError $ UserError $ UserErrorMsg msg
 
-simpleError = StdFun $ \s -> do
-  msg <- ensureType s
-  throwError $ UserError $ UserErrorMsg msg :: Kl Val
-
-errorToString = StdFun $ \e -> do
-  UserErrorMsg err <- ensureType e
-  return $ VStr err
+errorToString :: KlFun1
+errorToString e = do
+    UserErrorMsg err <- ensureType e
+    return $ VStr err
 
 -- Streams and I/O
 -- --------------------------------------------------------
 
-pr, readByte, open, close :: Func
-pr = StdFun $ \s stream -> do
-  (s' :: String) <- ensureType s
-  handle <- ensureType stream
-  liftIO $ hPutStrLn handle s'
-  return $ VStr s'
+pr :: KlFun2
+pr s stream = do
+    s' <- ensureType s
+    handle <- ensureType stream
+    liftIO $ hPutStr handle s'
+    return $ VStr s'
 
-readByte = StdFun $ \stream -> do
-  handle <- ensureType stream
-  byte <- liftIO $ tryIOError (hGetChar handle)
-  return . VNum $ case byte of
-                    Left _  -> -1
-                    Right b -> fromIntegral $ fromEnum b
+readByte :: KlFun1
+readByte stream = do
+    handle <- ensureType stream
+    byte <- liftIO $ tryIOError (hGetChar handle)
+    return . VNum $ case byte of
+                      Left _  -> -1
+                      Right b -> fromIntegral $ fromEnum b
 
-open = StdFun $ \(_ :: Val) path dir -> do
-  path' <- ensureType path
-  Symbol dir' <- ensureType dir
-  mode <- case dir' of
-            "in"  -> return ReadMode
-            "out" -> return WriteMode
-              -- TODO: maybe I should ensure this part and encode it in syntax tree
-            wrong -> throwError $ ErrMsg ("invalid open mode: " ++ wrong)
-  handle <- liftIO $ openFile path' mode
-  return $ VStream handle
+open :: KlFun3
+open _ path dir = do
+    path' <- ensureType path
+    Symbol dir' <- ensureType dir
+    mode <- case dir' of
+              "in"  -> return ReadMode
+              "out" -> return WriteMode
+                -- TODO: maybe I should ensure this part and encode it in syntax tree
+              wrong -> throwError $ ErrMsg ("invalid open mode: " ++ wrong)
+    handle <- liftIO $ openFile path' mode
+    return $ VStream handle
 
-close = StdFun $ \stream -> do
+close :: KlFun1
+close stream = do
   handle <- ensureType stream
   liftIO $ hClose handle
-  return $ VList []
+  return $ VUnit
 
 -- Streams and I/O
 -- --------------------------------------------------------
 
-eq :: Func
-eq = StdFun $ \v1 v2 -> liftM VBool $ eq' v1 v2
+eq :: KlFun2
+eq v1 v2 = liftM VBool $ eq' v1 v2
   where
     eq' :: Val -> Val -> Kl Bool
     eq' (VSym s1)  (VSym s2)  = return $ s1 == s2
     eq' (VBool b1) (VBool b2) = return $ b1 == b2
     eq' (VStr s1)  (VStr s2)  = return $ s1 == s2
     eq' (VNum n1)  (VNum n2)  = return $ n1 == n2
-    eq' (VList l1) (VList l2) =
-      if length l1 /= length l2
-        then return False
-        else liftM and $ zipWithM eq' l1 l2
+    eq' (VList v1 v2) (VList v1' v2') = liftM2 (&&) (eq' v1 v1') (eq' v2 v2')
     eq' VFun{}     VFun{}     = return False
     eq' (VVec v1)  (VVec v2)  =
       -- TODO: zipWithM for IOVectors ??
@@ -213,23 +220,22 @@ eq = StdFun $ \v1 v2 -> liftM VBool $ eq' v1 v2
     eq' VStream{}  VStream{}  = return False
     eq' _          _          = return False
 
-
 -- Standard environment
 -- --------------------------------------------------------
 
 stdenv :: M.HashMap String Func
 stdenv = M.fromList
-  [ ("pos", pos)
-  , ("tlstr", tlstr)
-  , ("cn", cn)
-  , ("str", str)
-  , ("string?", strp)
-  , ("n->string", nToStr)
-  , ("string->n", strToN)
-  , ("cons", cons)
-  , ("hd", hd)
-  , ("tl", tl)
-  , ("cons?", consp)
+  [ ("pos", StdFun pos)
+  , ("tlstr", StdFun tlstr)
+  , ("cn", StdFun cn)
+  , ("str", StdFun str)
+  , ("string?", StdFun strp)
+  , ("n->string", StdFun nToStr)
+  , ("string->n", StdFun strToN)
+  , ("cons", StdFun cons)
+  , ("hd", StdFun hd)
+  , ("tl", StdFun tl)
+  , ("cons?", StdFun consp)
   , ("+", mkArithFun (+))
   , ("-", mkArithFun (-))
   , ("*", mkArithFun (*))
@@ -239,18 +245,18 @@ stdenv = M.fromList
   , ("<=", mkArithFun (<=))
   , (">=", mkArithFun (>=))
   , ("number?", numberp)
-  , ("set", set')
-  , ("value", value)
-  , ("intern", intern)
-  , ("absvector", absvector)
-  , ("address->", vecAssign)
-  , ("<-address", vecRead)
-  , ("absvector?", vectorp)
-  , ("pr", pr)
-  , ("read-byte", readByte)
-  , ("open", open)
-  , ("close", close)
-  , ("=", eq)
-  , ("simple-error", simpleError)
-  , ("error-to-string", errorToString)
+  , ("set", StdFun set')
+  , ("value", StdFun value)
+  , ("intern", StdFun intern)
+  , ("absvector", StdFun absvector)
+  , ("address->", StdFun vecAssign)
+  , ("<-address", StdFun vecRead)
+  , ("absvector?", StdFun vectorp)
+  , ("simple-error", StdFun simpleError)
+  , ("error-to-string", StdFun errorToString)
+  , ("pr", StdFun pr)
+  , ("read-byte", StdFun readByte)
+  , ("open", StdFun open)
+  , ("close", StdFun close)
+  , ("=", StdFun eq)
   ]

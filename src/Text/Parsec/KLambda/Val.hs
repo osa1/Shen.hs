@@ -23,7 +23,7 @@ valeq (VSym (Symbol s)) (VSym (Symbol s')) = s == s'
 valeq (VBool b)  (VBool b') = b == b'
 valeq (VStr s)   (VStr s')  = s == s'
 valeq (VNum n)   (VNum n')  = n == n'
-valeq (VList l1) (VList l2) = and $ zipWith valeq l1 l2
+valeq (VList v1 v2) (VList v1' v2') = valeq v1 v1' && valeq v2 v2'
 valeq (VFun f1)  (VFun f2)  = error $ concat
     [ "can't compare function values ", show f1, " and ", show f2, "." ]
 valeq VVec{}     VVec{}     = error "can't compare vector values"
@@ -32,12 +32,12 @@ valeq _          _          = False
 
 listOf :: Parsec [Val] () b -> Parsec [Val] () b
 listOf p = do
-    VList tokens <- satisfy pred
-    case parse p "unparse" tokens of
+    vlist <- satisfy pred
+    case parse p "unparse" (listOfVList vlist) of
       Right r  -> return r
       Left err -> fail $ show err
-  where pred (VList _) = True
-        pred _         = False
+  where pred VList{} = True
+        pred _       = False
 
 tok :: Stream [Val] m Val => Val -> ParsecT [Val] u m Val
 tok t = satisfy (valeq t) <?> show t
