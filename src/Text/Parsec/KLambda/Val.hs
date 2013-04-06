@@ -33,7 +33,11 @@ valeq _          _          = False
 listOf :: Parsec [Val] () b -> Parsec [Val] () b
 listOf p = do
     vlist <- satisfy pred
-    case parse p "unparse" (listOfVList vlist) of
+    let lst = listOfVList vlist
+    let parsetarget = case last lst of
+                        VUnit{} -> init lst
+                        _ -> lst
+    case parse p "unparse" parsetarget of
       Right r  -> return r
       Left err -> fail $ show err
   where pred VList{} = True
