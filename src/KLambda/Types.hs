@@ -2,6 +2,8 @@
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Types where
 
+import KLambda.Utils
+
 import qualified Data.HashMap.Strict as M
 import qualified Data.Vector.Mutable as MV
 import Data.Hashable
@@ -13,6 +15,7 @@ import Control.Applicative
 import Text.Parsec (ParseError)
 
 import System.IO (Handle)
+import System.IO.Unsafe (unsafePerformIO)
 
 type Number = Double
 newtype Symbol = Symbol String deriving (Show, Eq, Ord)
@@ -59,7 +62,7 @@ instance Show Val where
     show (VList vals) = "(" ++ (unwords (map show vals)) ++ ")"
     show VFun{} = "<function>"
     show VSFun{} = "<special form>"
-    show VVec{} = "<vector>"
+    show (VVec vec) = "[" ++ (unwords (map show $ unsafePerformIO $ toList vec)) ++ "]"
     show VStream{} = "<stream>"
     show VCont{} = "<continuation>"
     show VErr{} = "<error>"
