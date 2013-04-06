@@ -218,6 +218,7 @@ eq v1 v2 = liftM VBool $ eq' v1 v2
           v2' <- liftIO $ V.freeze v2
           liftM V.and $ V.zipWithM eq' v1' v2'
     eq' VStream{}  VStream{}  = return False
+    eq' VUnit{}    VUnit{}    = return True
     eq' _          _          = return False
 
 -- Standard environment
