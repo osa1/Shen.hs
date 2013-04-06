@@ -48,7 +48,7 @@ readAndEval = do
         vals <- liftM Just (mapM (eval M.empty) exps') `catchError` handler
         case vals of
           Nothing    -> return ()
-          Just vals' -> liftIO $ print vals'
+          Just vals' -> liftIO $ print $ last vals'
         readAndEval
   where handler :: KlException -> Kl (Maybe [Val])
         handler err = liftIO (print err) >> return Nothing
