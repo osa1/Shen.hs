@@ -116,6 +116,10 @@ class KlFun a where
 data Func = Closure LexEnv (Maybe Symbol) Exp
           | forall f. (KlFun f) => StdFun f
 
+instance KlFun (Kl Val) where
+    apply f Nothing = f
+    apply f Just{}  = throwError ArityMismatch{foundAr=1, expectedAr=0}
+    arity _ = 0
 instance KlFun (Val -> Kl Val) where
     apply f Nothing = return $ VFun . StdFun $ f
     apply f (Just e) = f e

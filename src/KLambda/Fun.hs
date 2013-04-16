@@ -11,6 +11,7 @@ import Control.Monad.State     (modify, gets)
 import Control.Monad.Error     (throwError)
 import System.IO               (IOMode(..), hGetChar, hClose, hPutStr, openFile)
 import System.IO.Error         (tryIOError)
+import Data.Time.Clock.POSIX   (getPOSIXTime)
 
 import KLambda.Types
 import KLambda.Env
@@ -18,7 +19,8 @@ import KLambda.Env
 returnKl :: a -> Kl a
 returnKl = return
 
-type KlFun1 = Val -> Kl Val
+type KlFun0 = Kl Val
+type KlFun1 = Val -> KlFun0
 type KlFun2 = Val -> KlFun1
 type KlFun3 = Val -> KlFun2
 
@@ -221,6 +223,14 @@ eq v1 v2 = liftM VBool $ eq' v1 v2
     eq' VUnit{}    VUnit{}    = return True
     eq' _          _          = return False
 
+-- Time
+-- --------------------------------------------------------
+
+getTime :: KlFun0
+getTime = do
+  t <- liftIO getPOSIXTime
+  return $ VNum . fromIntegral . fromEnum $ t
+
 -- Standard environment
 -- --------------------------------------------------------
 
@@ -260,4 +270,5 @@ stdenv = M.fromList
   , ("open", StdFun open)
   , ("close", StdFun close)
   , ("=", StdFun eq)
+  , ("get-time", StdFun getTime)
   ]
