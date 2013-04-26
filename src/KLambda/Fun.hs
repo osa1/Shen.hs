@@ -231,8 +231,8 @@ eq v1 v2 = liftM VBool $ eq' v1 v2
 -- Time
 -- --------------------------------------------------------
 
-getTime :: KlFun0
-getTime = do
+getTime :: KlFun1
+getTime _ = do
   t <- liftIO getPOSIXTime
   return $ VNum . fromIntegral . fromEnum $ t
 
