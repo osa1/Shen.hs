@@ -6,21 +6,32 @@ module KLambda.Lexer where
 %wrapper "posn"
 
 $whitespace  = [ \ \t \r \n ]
-$alpha       = [ a-z A-Z \= \- \* \/ \+ \_ \? \$ \! \@ \~ \. \> \< \& \% \' \# \` \; \: \{ \} ]
+
+
+$symbolstart = [ a-z A-Z \= \* \/ \+    \_ \? \$ \! \@ \~ \. \> \< \& \% \' \# \` \; \: \{ \} ]
+$symbolrest  = [ a-z A-Z \= \* \/ \+ \- \_ \? \$ \! \@ \~ \. \> \< \& \% \' \# \` \; \: \{ \} ]
 $digit       = 0-9
+$neg         = \-
 
 -- this is taken from my Lua lexer, make sure it works for KLambda
 $str         = \0-\255 # [ \" ]
 
+@mantpart    = \. $digit+
+
+
 klambda :-
 
-    $whitespace+              ;
-    \" $str* \"               { \posn s -> (Str (tail . init $ s), Right posn) }
-    \(                        { \posn _ -> (LParen, Right posn) }
-    \)                        { \posn _ -> (RParen, Right posn) }
-    $alpha                    { \posn s -> (Symbol s, Right posn) }
-    $alpha [ $alpha $digit ]+ { \posn s -> (Symbol s, Right posn) }
-    $digit+                   { \posn s -> (Number s, Right posn) }
+    $whitespace+                         ;
+    \" $str* \"                          { \posn s -> (Str (tail . init $ s), Right posn) }
+    \(                                   { \posn _ -> (LParen, Right posn) }
+    \)                                   { \posn _ -> (RParen, Right posn) }
+
+    $symbolstart [ $symbolrest $digit ]* { \posn s -> (Symbol s, Right posn) }
+    $neg+                                { \posn s -> (Symbol s, Right posn) }
+    $neg+ $symbolstart+ [ $symbolrest $digit ]*
+                                         { \posn s -> (Symbol s, Right posn) }
+
+    $neg? $digit+ @mantpart?             { \posn s -> (Number s, Right posn) }
 
 {
 
