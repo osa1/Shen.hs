@@ -113,6 +113,11 @@ class KlFun a where
     apply :: a -> Maybe Val -> Kl Val
     arity :: a -> Int
 
+type KlFun0 = Kl Val
+type KlFun1 = Val -> KlFun0
+type KlFun2 = Val -> KlFun1
+type KlFun3 = Val -> KlFun2
+
 data Func = Closure LexEnv (Maybe Symbol) Exp
           | forall f. (KlFun f) => StdFun f
 

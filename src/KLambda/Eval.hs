@@ -97,6 +97,7 @@ eval env (EApp exp Nothing) = do
           then apply f Nothing
           else return $ VFun f
       VSFun s -> return $ VSFun s
+      VCont e -> eval env e
       _ -> error $ "apply a non-function value: " ++ show val
 
 eval env (EApp exp (Just arg)) = do

@@ -20,11 +20,6 @@ import KLambda.Env
 returnKl :: a -> Kl a
 returnKl = return
 
-type KlFun0 = Kl Val
-type KlFun1 = Val -> KlFun0
-type KlFun2 = Val -> KlFun1
-type KlFun3 = Val -> KlFun2
-
 klEnsureType :: Type -> KlFun1
 klEnsureType ty v = returnKl . klVal $ typeOf v == ty
 
