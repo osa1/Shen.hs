@@ -7,10 +7,11 @@ import qualified Data.Vector.Mutable as MV
 import qualified Data.Vector         as V
 import Control.Monad           (liftM, liftM2)
 import Control.Monad.IO.Class  (liftIO)
-import Control.Monad.State     (modify, gets)
+import Control.Monad.State     (modify, gets, get)
 import Control.Monad.Error     (throwError)
 import System.IO               (IOMode(..), hGetChar, hClose, hPutStr, openFile)
 import System.IO.Error         (tryIOError)
+import System.FilePath         ((</>))
 import Data.Time.Clock.POSIX   (getPOSIXTime)
 
 import KLambda.Types
@@ -189,7 +190,11 @@ open _ path dir = do
               "out" -> return WriteMode
                 -- TODO: maybe I should ensure this part and encode it in syntax tree
               wrong -> throwError $ ErrMsg ("invalid open mode: " ++ wrong)
-    handle <- liftIO $ openFile path' mode
+    env <- get
+    homedir <- case lookupSym (Symbol "*home-directory*") env of
+                 Nothing -> error "*home-directory* is not set"
+                 Just p  -> ensureType p
+    handle <- liftIO $ openFile (homedir </> path') mode
     return $ VStream handle
 
 close :: KlFun1
