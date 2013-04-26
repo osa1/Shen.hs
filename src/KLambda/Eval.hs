@@ -21,9 +21,9 @@ instance KlFun Func where
     apply (Closure env (Just (Symbol argName)) body) (Just arg) =
       eval (insert argName arg env) body
 
-    apply f@StdFun{} Nothing
+    apply f@(StdFun f') Nothing
       | arity f /= 0 = return $ VFun f
-      | otherwise = undefined
+      | otherwise = apply f' Nothing
     apply (StdFun f) (Just arg) = apply f (Just arg)
 
     arity (Closure _ Nothing _) = 0
