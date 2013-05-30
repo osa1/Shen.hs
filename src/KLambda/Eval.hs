@@ -40,7 +40,7 @@ evalKl env exp = do
       return $ last vals
 
 freeze :: SFun
-freeze _ exp = return $ VCont exp
+freeze env exp = return $ VFun $ Closure env Nothing exp
 
 trapError :: SFun
 trapError env exp = return $
@@ -91,13 +91,13 @@ eval env (EApp exp Nothing) = do
                        else return $ VFun f
           Nothing -> case M.lookup s specials of
                        Nothing -> throwError $ UnboundSymbol s
-                       Just sv -> return $ VSFun sv
+                       Just sv -> return $ VFun $ Closure env (Just (Symbol "X"))
+                                                              (EApp (ESym (symStr s)) (Just (ESym "X")))
       VFun f -> do
         if arity f == 0
           then apply f Nothing
           else return $ VFun f
       VSFun s -> return $ VSFun s
-      VCont e -> eval env e
       _ -> error $ "apply a non-function value: " ++ show val
 
 eval env (EApp exp (Just arg)) = do

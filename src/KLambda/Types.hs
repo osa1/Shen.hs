@@ -45,7 +45,6 @@ data Val
     | VSFun SFun
     | VVec (MV.IOVector Val)
     | VStream Handle
-    | VCont Exp
     | VErr UserErrorMsg
     | VUnit
 
@@ -74,7 +73,6 @@ instance Show Val where
     show VSFun{} = "<special form>"
     show (VVec vec) = "[" ++ (unwords (map show $ unsafePerformIO $ toList vec)) ++ "]"
     show VStream{} = "<stream>"
-    show VCont{} = "<continuation>"
     show VErr{} = "<error>"
     show VUnit = "<unit>"
 
@@ -153,7 +151,6 @@ typeOf VFun{}  = TyClos
 typeOf VSFun{} = TyClos -- FIXME
 typeOf VVec{}  = TyVec
 typeOf VStream{} = TyStream
-typeOf VCont{} = TyCont
 typeOf VErr{}  = TyExc
 typeOf VUnit{} = TyUnit
 
@@ -199,11 +196,6 @@ instance EnsureType Handle where
     ensureType (VStream v) = return v
     ensureType notStream =
       throwError TypeError{ foundTy = typeOf notStream, expectedTy = TyStream }
-
-instance EnsureType Exp where
-    ensureType (VCont e) = return e
-    ensureType notCont =
-      throwError TypeError{ foundTy = typeOf notCont, expectedTy = TyCont }
 
 instance EnsureType UserErrorMsg where
     ensureType (VErr msg) = return msg
