@@ -114,7 +114,8 @@ eval env (EApp exp (Just arg)) = do
       VSFun s -> s env arg
       _ -> error $ "apply a non-function value: " ++ show val
 
+-- TODO: throw an error when redefining a primitive
 eval env (EDefun (Symbol name) lambda) = do
     VFun c@Closure{} <- eval env lambda
     modify $ \e -> insertFunEnv (Symbol name) c e
-    return $ VFun c
+    return $ VSym (Symbol name)
