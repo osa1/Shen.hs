@@ -9,7 +9,7 @@ import Control.Monad           (liftM, liftM2)
 import Control.Monad.IO.Class  (liftIO)
 import Control.Monad.State     (modify, gets, get)
 import Control.Monad.Error     (throwError)
-import System.IO               (IOMode(..), hGetChar, hClose, hPutStr, openFile)
+import System.IO               (IOMode(..), hGetChar, hClose, hPutStr, openFile, hFlush)
 import System.IO.Error         (tryIOError)
 import System.FilePath         ((</>))
 import Data.Time.Clock.POSIX   (getPOSIXTime)
@@ -165,7 +165,9 @@ pr :: KlFun2
 pr s stream = do
     s' <- ensureType s
     handle <- ensureType stream
-    liftIO $ hPutStr handle s'
+    liftIO $ do
+      hPutStr handle s'
+      hFlush handle
     return $ VStr s'
 
 readByte :: KlFun1
