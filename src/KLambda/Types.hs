@@ -71,7 +71,10 @@ instance Show Val where
 
     show VFun{} = "<function>"
     show VSFun{} = "<special form>"
-    show (VVec vec) = "[" ++ (unwords (map show $ unsafePerformIO $ toList vec)) ++ "]"
+    -- show (VVec vec) = "[" ++ (unwords (map show $ unsafePerformIO $ toList vec)) ++ "]"
+    -- TODO: printing vector with uninitialized elements fails at runtime
+    -- TODO: reading uninitialized elements also fails
+    show VVec{} = "<vector>"
     show VStream{} = "<stream>"
     show VErr{} = "<error>"
     show VUnit = "<unit>"
