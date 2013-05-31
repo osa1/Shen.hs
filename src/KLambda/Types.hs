@@ -20,6 +20,9 @@ import System.IO.Unsafe (unsafePerformIO)
 type Number = Double
 newtype Symbol = Symbol String deriving (Show, Eq, Ord)
 
+symStr :: Symbol -> String
+symStr (Symbol s) = s
+
 instance Hashable Symbol where
     hashWithSalt i (Symbol s) = hashWithSalt i s
 
