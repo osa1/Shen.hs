@@ -95,7 +95,7 @@ eval env (EApp exp Nothing) = do
           then apply f Nothing
           else return $ VFun f
       VSFun s -> return $ VSFun s
-      _ -> error $ "apply a non-function value: " ++ show val
+      notFun -> throwError TypeError{foundTy = typeOf notFun, expectedTy = TyFun}
 
 eval env (EApp exp (Just arg)) = do
     val <- eval env exp
@@ -109,7 +109,7 @@ eval env (EApp exp (Just arg)) = do
                        Just sv -> sv env arg
       VFun f -> apply f . Just =<< eval env arg
       VSFun s -> s env arg
-      _ -> error $ "apply a non-function value: " ++ show val
+      notFun -> throwError TypeError{foundTy = typeOf notFun, expectedTy = TyFun}
 
 -- TODO: throw an error when redefining a primitive
 eval env (EDefun (Symbol name) lambda) = do
