@@ -151,12 +151,12 @@ vectorp = klEnsureType TyVec
 simpleError :: KlFun1
 simpleError s = do
     msg <- ensureType s
-    throwError $ UserError $ UserErrorMsg msg
+    throwError $ UserError msg
 
 errorToString :: KlFun1
 errorToString e = do
-    UserErrorMsg err <- ensureType e
-    return $ VStr err
+    err :: KlException <- ensureType e
+    return $ VStr (show err)
 
 -- Streams and I/O
 -- --------------------------------------------------------

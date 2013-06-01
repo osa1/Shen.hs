@@ -47,12 +47,9 @@ trapError env exp = return $
     VSFun $ \env' exp' -> do
       eval env exp `catchError` handler env' exp'
   where handler :: LexEnv -> Exp -> KlException -> Kl Val
-        handler env exp err =
-          case err of
-            UserError userErr -> do
-              handlerFun' :: Func <- ensureType =<< (eval env exp)
-              apply handlerFun' (Just (VErr userErr))
-            _ -> throwError err
+        handler env exp err = do
+          handlerFun' :: Func <- ensureType =<< (eval env exp)
+          apply handlerFun' (Just (VErr err))
 
 specials :: M.HashMap Symbol SFun
 specials = M.fromList

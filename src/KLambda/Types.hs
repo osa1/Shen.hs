@@ -48,7 +48,7 @@ data Val
     | VSFun SFun
     | VVec (MV.IOVector Val)
     | VStream Handle
-    | VErr UserErrorMsg
+    | VErr KlException
     | VUnit
 
 listOfVList :: Val -> [Val]
@@ -87,13 +87,11 @@ data Type
     | TyVec | TyFun | TyList | TyTuple | TyClos | TyCont | TyUnit
     deriving (Show, Eq)
 
-newtype UserErrorMsg = UserErrorMsg String deriving (Show, Eq)
-
 data KlException
     = TypeError     { foundTy :: Type, expectedTy :: Type }
     | ArityMismatch { foundAr :: Int, expectedAr :: Int }
     | KlParseError ParseError
-    | UserError UserErrorMsg
+    | UserError String
     | UnboundSymbol Symbol
     | ErrMsg String
     deriving Show
@@ -203,8 +201,8 @@ instance EnsureType Handle where
     ensureType notStream =
       throwError TypeError{ foundTy = typeOf notStream, expectedTy = TyStream }
 
-instance EnsureType UserErrorMsg where
-    ensureType (VErr msg) = return msg
+instance EnsureType KlException where
+    ensureType (VErr err) = return err
     ensureType notErr =
       throwError TypeError{ foundTy = typeOf notErr, expectedTy = TyExc }
 
