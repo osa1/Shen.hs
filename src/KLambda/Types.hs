@@ -2,8 +2,6 @@
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Types where
 
-import KLambda.Utils
-
 import qualified Data.HashMap.Strict as M
 import qualified Data.Vector.Mutable as MV
 import Data.Hashable
@@ -15,7 +13,6 @@ import Control.Applicative
 import Text.Parsec (ParseError)
 
 import System.IO (Handle)
-import System.IO.Unsafe (unsafePerformIO)
 
 type Number = Double
 newtype Symbol = Symbol String deriving (Show, Eq, Ord)
@@ -125,7 +122,7 @@ data Func = Closure LexEnv (Maybe Symbol) Exp
 
 instance KlFun (Kl Val) where
     apply f Nothing = f
-    apply f Just{}  = throwError ArityMismatch{foundAr=1, expectedAr=0}
+    apply _ Just{}  = throwError ArityMismatch{foundAr=1, expectedAr=0}
     arity _ = 0
 instance KlFun (Val -> Kl Val) where
     apply f Nothing = return $ VFun . StdFun $ f
@@ -140,10 +137,10 @@ instance KlFun (Val -> Val -> Val -> Kl Val) where
     apply f (Just e) = return (VFun . StdFun $ f e)
     arity _ = 3
 
-instance Show Func where
-    show (Closure env arg body) = "Closure{" ++ show env ++ "," ++ show arg ++ "," ++ show body ++ "}"
-    show _ = "func"
---instance Show Func where show _ = "func"
+--instance Show Func where
+    --show (Closure env arg body) = "Closure{" ++ show env ++ "," ++ show arg ++ "," ++ show body ++ "}"
+    --show _ = "func"
+instance Show Func where show _ = "func"
 
 typeOf :: Val -> Type
 typeOf VSym{}  = TySym

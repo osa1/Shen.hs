@@ -88,7 +88,7 @@ eval env (EApp exp Nothing) = do
                        else return $ VFun f
           Nothing -> case M.lookup s specials of
                        Nothing -> throwError $ UnboundSymbol s
-                       Just sv -> return $ VFun $ Closure env (Just (Symbol "X"))
+                       Just _  -> return $ VFun $ Closure env (Just (Symbol "X"))
                                                               (EApp (ESym (symStr s)) (Just (ESym "X")))
       VFun f -> do
         if arity f == 0
