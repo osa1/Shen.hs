@@ -1,20 +1,22 @@
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Main where
 
--- KLambda load order
--- ["toplevel.kl" "core.kl" "sys.kl" "sequent.kl" "yacc.kl" "reader.kl" "prolog.kl" "track.kl" "load.kl" "writer.kl" "macros.kl" "declarations.kl" "t-star.kl" "types.kl"]
-
+import           KLambda.Env         (insertFunEnv)
 import           KLambda.Eval
 import qualified KLambda.Fun         as F
-import           KLambda.Lexer
+import           KLambda.Lexer       (alexScanTokens')
 import           KLambda.Parser
 import           KLambda.Types
 
 import           Control.Monad.Error
 import           Control.Monad.State
 import qualified Data.HashMap.Strict as M
+import           Data.List           (intercalate)
+import qualified Data.Set            as S
 import           Prelude             hiding (exp)
+import           System.Directory    (getDirectoryContents)
 import           System.Environment  (getArgs)
+import           System.FilePath     ((</>))
 import           System.IO           (hFlush, stdin, stdout)
 import           Text.Parsec         (parse)
 
@@ -56,7 +58,7 @@ readAndEval = do
     handler err = liftIO (print err) >> return Nothing
 
 evalFiles :: [FilePath] -> Kl ()
-evalFiles [] = readAndEval
+evalFiles [] = return ()
 evalFiles (path:paths) = do
     file <- liftIO $ readFile path
     case parse exps path (alexScanTokens' file) of
@@ -66,8 +68,30 @@ evalFiles (path:paths) = do
         liftIO $ putStrLn $ "loaded file: " ++ path
     evalFiles paths
 
+loadShen :: KlFun1
+loadShen path = do
+    path' <- ensureType path
+    dirContents <- liftIO $ getDirectoryContents path'
+    let ss = S.fromList shenSources
+        fs = S.fromList dirContents
+    if ss `S.isSubsetOf` fs
+      then evalFiles (map (path' </>) shenSources) >> eval M.empty (EApp (ESym "shen.shen") Nothing)
+      else throwError $ UserError $ concat
+             [ "cannot load Shen, this KLambda sources are missing in "
+             , path' , ": ", intercalate ", " (S.toList (ss `S.difference` fs)) ]
+  where
+    shenSources = [ "toplevel.kl", "core.kl", "sys.kl", "sequent.kl"
+                  , "yacc.kl", "reader.kl", "prolog.kl", "track.kl"
+                  , "load.kl", "writer.kl", "macros.kl", "declarations.kl"
+                  , "t-star.kl", "types.kl"
+                  ]
+
 main :: IO ()
 main = do
     args <- getArgs
-    r <- runErrorT $ evalStateT (runKl $ evalFiles args) stdenv
+    -- TODO: this is a temporary solution, `loadShen` should be in `Fun.hs`
+    -- and it should be added to standard environment. Solution to this may
+    -- be harder than expected because of circular import problems.
+    let env = insertFunEnv (Symbol "load-shen") (StdFun loadShen) stdenv
+    r <- runErrorT $ evalStateT (runKl $ evalFiles args >> readAndEval) env
     print r
