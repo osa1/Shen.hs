@@ -1,18 +1,19 @@
-{-# LANGUAGE MultiParamTypeClasses, FunctionalDependencies,
-             TypeSynonymInstances, FlexibleInstances #-}
+{-# LANGUAGE FlexibleInstances      #-}
+{-# LANGUAGE FunctionalDependencies #-}
+{-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE TypeSynonymInstances   #-}
 {-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
 module KLambda.Parser where
 
-import qualified KLambda.Lexer as L
-import KLambda.Types
+import qualified KLambda.Lexer           as L
+import           KLambda.Types
 
-import Text.Parsec hiding (string)
+import           Control.Applicative     ((<$>), (<*), (<*>))
+import           Control.Monad           (void)
+import           Prelude                 hiding (exp)
+import           Text.Parsec             hiding (string)
 import qualified Text.Parsec.KLambda.Exp as Exp
 import qualified Text.Parsec.KLambda.Val as Val
-
-import Control.Applicative ((<*>), (<$>), (<*))
-
-import Prelude hiding (exp)
 
 class KLambdaParser tokpos tok | tokpos -> tok where
     tok       :: tok -> Parsec [tokpos] () tok
@@ -41,7 +42,7 @@ instance KLambdaParser L.KlToken L.KlTok where
 
     symbol = Exp.symbol
 
-    unit = tok L.LParen >> tok L.RParen >> return ()
+    unit = void $ tok L.LParen >> tok L.RParen
 
     listOf = Exp.listOf
 
@@ -62,9 +63,10 @@ instance KLambdaParser Val Val where
 
     symbol = Val.symbol
 
-    unit = Val.satisfy f >> return ()
-      where f VUnit{} = True
-            f _       = False
+    unit = void $ Val.satisfy f
+      where
+        f VUnit{} = True
+        f _       = False
 
     listOf = Val.listOf
 
@@ -95,8 +97,9 @@ defunE = listOf $ do
                     then ELambda Nothing body
                     else mkLambda args body
     return $ EDefun name binding
-  where mkLambda []     body = body
-        mkLambda (a:as) body = ELambda (Just a) (mkLambda as body)
+  where
+    mkLambda []     body = body
+    mkLambda (a:as) body = ELambda (Just a) (mkLambda as body)
 
 letE = listOf $ do
   symbol "let"
@@ -111,13 +114,15 @@ appE = listOf $ do
     return $ if null args
                then EApp fun Nothing
                else mkApp fun args
-  where mkApp f [] = f
-        mkApp f (a:as) = mkApp (EApp f (Just a)) as
+  where
+    mkApp f [] = f
+    mkApp f (a:as) = mkApp (EApp f (Just a)) as
 
 condE = listOf $ symbol "cond" >> mkIf <$> many case_
-  where case_ = listOf $ (,) <$> exp <*> exp
-        mkIf [(g, b)]    = EIf g b EUnit
-        mkIf ((g, b):cs) = EIf g b (mkIf cs)
+  where
+    case_ = listOf $ (,) <$> exp <*> exp
+    mkIf [(g, b)]    = EIf g b EUnit
+    mkIf ((g, b):cs) = EIf g b (mkIf cs)
 
 orE = listOf $ do
   symbol "or"

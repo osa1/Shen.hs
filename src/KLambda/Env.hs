@@ -1,11 +1,11 @@
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Env where
 
-import qualified Data.HashMap.Strict as M
-import Control.Monad.State (get)
-import Control.Monad (liftM)
+import           KLambda.Types
 
-import KLambda.Types
+import           Control.Monad       (liftM)
+import           Control.Monad.State (get)
+import qualified Data.HashMap.Strict as M
 
 funEnv :: Env -> FunEnv
 funEnv = fst

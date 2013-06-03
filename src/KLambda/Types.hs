@@ -1,18 +1,17 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving, FlexibleInstances, ExistentialQuantification #-}
+{-# LANGUAGE ExistentialQuantification  #-}
+{-# LANGUAGE FlexibleInstances          #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Types where
 
+import           Control.Applicative
+import           Control.Monad.Error
+import           Control.Monad.State
+import           Data.Hashable
 import qualified Data.HashMap.Strict as M
 import qualified Data.Vector.Mutable as MV
-import Data.Hashable
-
-import Control.Monad.Error
-import Control.Monad.State
-import Control.Applicative
-
-import Text.Parsec (ParseError)
-
-import System.IO (Handle)
+import           System.IO           (Handle)
+import           Text.Parsec         (ParseError)
 
 type Number = Double
 newtype Symbol = Symbol String deriving (Show, Eq, Ord)
@@ -58,7 +57,7 @@ instance Show Val where
     show (VStr s) = show s
     show (VNum n) = show n
     show lst@VList{} =
-        if length elems == 0
+        if null elems
           then "()"
           else let l = last elems
                    f = init elems

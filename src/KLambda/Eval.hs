@@ -2,17 +2,15 @@
 {-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 module KLambda.Eval where
 
-import KLambda.Types
-import KLambda.Env
-import KLambda.Parser (exps)
+import           KLambda.Env
+import           KLambda.Parser      (exps)
+import           KLambda.Types
 
-import Control.Monad.Error (throwError, catchError)
-import Control.Monad.State hiding (guard)
+import           Control.Monad.Error (catchError, throwError)
+import           Control.Monad.State hiding (guard)
 import qualified Data.HashMap.Strict as M
-
-import Text.Parsec (parse)
-
-import Prelude hiding (exp, lookup)
+import           Prelude             hiding (exp, lookup)
+import           Text.Parsec         (parse)
 
 instance KlFun Func where
     apply (Closure env Nothing body) Nothing = eval env body
@@ -44,12 +42,12 @@ freeze env exp = return $ VFun $ Closure env Nothing exp
 
 trapError :: SFun
 trapError env exp = return $
-    VSFun $ \env' exp' -> do
-      eval env exp `catchError` handler env' exp'
-  where handler :: LexEnv -> Exp -> KlException -> Kl Val
-        handler env exp err = do
-          handlerFun' :: Func <- ensureType =<< (eval env exp)
-          apply handlerFun' (Just (VErr err))
+    VSFun $ \env' exp' -> eval env exp `catchError` handler env' exp'
+  where
+    handler :: LexEnv -> Exp -> KlException -> Kl Val
+    handler env exp err = do
+      handlerFun' :: Func <- ensureType =<< eval env exp
+      apply handlerFun' (Just (VErr err))
 
 specials :: M.HashMap Symbol SFun
 specials = M.fromList
@@ -66,7 +64,7 @@ eval env (ESym s) =
 eval _ (EBool b) = return $ VBool b
 eval _ (EStr s)  = return $ VStr s
 eval _ (ENum n)  = return $ VNum n
-eval _ EUnit     = return $ VUnit
+eval _ EUnit     = return VUnit
 eval env (ELambda param body) =
     return $ VFun (Closure env param body)
 eval env (EIf guard then_ else_) = do
@@ -83,14 +81,16 @@ eval env (EApp exp Nothing) = do
       VSym s -> do
         fun <- lookupFun' s
         case fun of
-          Just f  -> if arity f == 0
-                       then apply f Nothing
-                       else return $ VFun f
-          Nothing -> case M.lookup s specials of
-                       Nothing -> throwError $ UnboundSymbol s
-                       Just _  -> return $ VFun $ Closure env (Just (Symbol "X"))
-                                                              (EApp (ESym (symStr s)) (Just (ESym "X")))
-      VFun f -> do
+          Just f  ->
+            if arity f == 0
+              then apply f Nothing
+              else return $ VFun f
+          Nothing ->
+            case M.lookup s specials of
+              Nothing -> throwError $ UnboundSymbol s
+              Just _  -> return $ VFun $ Closure env (Just (Symbol "X"))
+                                                     (EApp (ESym (symStr s)) (Just (ESym "X")))
+      VFun f ->
         if arity f == 0
           then apply f Nothing
           else return $ VFun f

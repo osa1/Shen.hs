@@ -2,43 +2,44 @@
 module KLambda.Main where
 
 -- KLambda load order
--- ["toplevel.kl" "core.kl" "sys.kl" "sequent.kl" "yacc.kl" "reader.kl" "prolog.kl" "track.kl" "load.kl" "writer.kl" "macros.kl" "declarations.kl"   "types.kl" "t-star.kl"]
+-- ["toplevel.kl" "core.kl" "sys.kl" "sequent.kl" "yacc.kl" "reader.kl" "prolog.kl" "track.kl" "load.kl" "writer.kl" "macros.kl" "declarations.kl" "t-star.kl" "types.kl"]
 
+import           KLambda.Eval
+import qualified KLambda.Fun         as F
+import           KLambda.Lexer
+import           KLambda.Parser
+import           KLambda.Types
+
+import           Control.Monad.Error
+import           Control.Monad.State
 import qualified Data.HashMap.Strict as M
-
-import KLambda.Types
-import KLambda.Eval
-import KLambda.Lexer
-import KLambda.Parser
-import Text.Parsec (parse)
-import Control.Monad.State
-import Control.Monad.Error
-import System.Environment (getArgs)
-import System.IO (hFlush, stdout, stdin)
-import qualified KLambda.Fun as F
-
-import Prelude hiding (exp)
+import           Prelude             hiding (exp)
+import           System.Environment  (getArgs)
+import           System.IO           (hFlush, stdin, stdout)
+import           Text.Parsec         (parse)
 
 stdenv :: Env
 stdenv = (F.stdenv, M.fromList stdvars)
-  where stdvars = [ ("*language*", VStr "Haskell")
-                  , ("*implementation*", VStr "GHC")
-                  , ("*release*", undefined)
-                  , ("*port*", VStr "0.1")
-                  , ("*porters*", VStr "Ömer Sinan Ağacan")
-                  , ("*stinput*", VStream stdin)
-                  , ("*stoutput*", VStream stdout)
-                  , ("*home-directory*", VStr "~/")
-                  , ("*version*", VStr "TODO")
-                  , ("*maximum-point-sequence-size*", VNum 100)
-                  , ("*printer*", undefined)
-                  , ("*macros*", undefined)
-                  ]
+  where
+    stdvars = [ ("*language*", VStr "Haskell")
+              , ("*implementation*", VStr "GHC")
+              , ("*release*", undefined)
+              , ("*port*", VStr "0.1")
+              , ("*porters*", VStr "Ömer Sinan Ağacan")
+              , ("*stinput*", VStream stdin)
+              , ("*stoutput*", VStream stdout)
+              , ("*home-directory*", VStr "~/")
+              , ("*version*", VStr "TODO")
+              , ("*maximum-point-sequence-size*", VNum 100)
+              , ("*printer*", VUnit)
+              , ("*macros*", VUnit)
+              ]
 
 readAndEval :: Kl ()
 readAndEval = do
-    liftIO $ putStr "> "
-    liftIO $ hFlush stdout
+    liftIO $ do
+      putStr "> "
+      hFlush stdout
     input <- liftIO getLine
     case parse exps "klambda" (alexScanTokens' input) of
       Left err -> do
@@ -50,8 +51,9 @@ readAndEval = do
           Nothing    -> return ()
           Just vals' -> liftIO $ print $ last vals'
         readAndEval
-  where handler :: KlException -> Kl (Maybe [Val])
-        handler err = liftIO (print err) >> return Nothing
+  where
+    handler :: KlException -> Kl (Maybe [Val])
+    handler err = liftIO (print err) >> return Nothing
 
 evalFiles :: [FilePath] -> Kl ()
 evalFiles [] = readAndEval

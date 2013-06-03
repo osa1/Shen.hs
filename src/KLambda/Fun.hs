@@ -2,24 +2,24 @@
 {-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 module KLambda.Fun where
 
-import qualified Data.HashMap.Strict as M
-import qualified Data.Vector.Mutable as MV
-import qualified Data.Vector         as V
-import Control.Monad           (liftM, liftM2)
-import Control.Monad.IO.Class  (liftIO)
-import Control.Monad.State     (modify, gets, get)
-import Control.Monad.Error     (throwError)
-import System.IO               (IOMode(..), hGetChar, hClose, hPutStr, openFile, hFlush)
-import System.IO.Error         (tryIOError)
-import System.FilePath         ((</>))
-import Data.Time.Clock.POSIX   (getPOSIXTime)
+import           KLambda.Env
+import           KLambda.Parser
+import           KLambda.Types
 
-import KLambda.Types
-import KLambda.Env
-
-import KLambda.Parser
-import Text.Parsec
-import Prelude hiding (exp)
+import           Control.Monad          (liftM, liftM2)
+import           Control.Monad.Error    (throwError)
+import           Control.Monad.IO.Class (liftIO)
+import           Control.Monad.State    (get, gets, modify)
+import qualified Data.HashMap.Strict    as M
+import           Data.Time.Clock.POSIX  (getPOSIXTime)
+import qualified Data.Vector            as V
+import qualified Data.Vector.Mutable    as MV
+import           Prelude                hiding (exp)
+import           System.FilePath        ((</>))
+import           System.IO              (IOMode (..), hClose, hFlush, hGetChar,
+                                         hPutStr, openFile)
+import           System.IO.Error        (tryIOError)
+import           Text.Parsec
 
 returnKl :: a -> Kl a
 returnKl = return
@@ -48,7 +48,7 @@ cn v1 v2 = do
     return $ VStr (s1 ++ s2)
 
 str :: KlFun1
-str v = returnKl $ VStr (show v)
+str v = return $ VStr (show v)
 
 strp :: KlFun1
 strp = klEnsureType TyStr
@@ -202,7 +202,7 @@ close :: KlFun1
 close stream = do
   handle <- ensureType stream
   liftIO $ hClose handle
-  return $ VUnit
+  return VUnit
 
 -- Streams and I/O
 -- --------------------------------------------------------
