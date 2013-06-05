@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE ExistentialQuantification  #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
@@ -7,14 +8,17 @@ module KLambda.Types where
 import           Control.Applicative
 import           Control.Monad.Error
 import           Control.Monad.State
+import           Data.Binary
 import           Data.Hashable
 import qualified Data.HashMap.Strict as M
 import qualified Data.Vector.Mutable as MV
+import           GHC.Generics        (Generic)
 import           System.IO           (Handle)
 import           Text.Parsec         (ParseError)
 
 type Number = Double
-newtype Symbol = Symbol String deriving (Show, Eq, Ord)
+newtype Symbol = Symbol String deriving (Show, Eq, Ord, Generic)
+instance Binary Symbol
 
 symStr :: Symbol -> String
 symStr (Symbol s) = s
@@ -32,7 +36,8 @@ data Exp
     | EIf Exp Exp Exp -- guard, then case, else case
     | EDefun Symbol Exp
     | EUnit
-    deriving Show
+    deriving (Show, Generic)
+instance Binary Exp
 
 data Val
     = VSym Symbol
@@ -81,7 +86,8 @@ instance Show Val where
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc
     | TyVec | TyFun | TyList | TyTuple | TyClos | TyCont | TyUnit
-    deriving (Show, Eq)
+    deriving (Show, Eq, Generic)
+instance Binary Type
 
 data KlException
     = TypeError     { foundTy :: Type, expectedTy :: Type }
@@ -89,6 +95,7 @@ data KlException
     | KlParseError ParseError
     | UserError String
     | UnboundSymbol Symbol
+    | SerializationError Val
     | ErrMsg String
     deriving Show
 

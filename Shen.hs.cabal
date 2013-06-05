@@ -52,8 +52,10 @@ executable Shen.hs
   -- Modules included in this executable, other than Main.
   -- other-modules:
 
+  ghc-options:         -O2
+
   -- Other library packages from which modules are imported.
-  build-depends:       base ==4.6.*, parsec ==3.1.*, unordered-containers ==0.2.*, mtl ==2.1.*, array ==0.4.*, vector ==0.10.*, transformers ==0.3.*, hashable ==1.2.*, time ==1.4.*, filepath ==1.3.*, directory==1.2.*, containers==0.5.*
+  build-depends:       base ==4.6.*, parsec ==3.1.*, unordered-containers ==0.2.*, mtl ==2.1.*, array ==0.4.*, vector ==0.10.*, transformers ==0.3.*, hashable ==1.2.*, time ==1.4.*, filepath ==1.3.*, directory==1.2.*, containers==0.5.*, binary==0.7.*
 
   -- Directories containing source files.
   hs-source-dirs:      src
