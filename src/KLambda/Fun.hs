@@ -126,7 +126,7 @@ intern v = do
 absvector :: KlFun1
 absvector v = do
     n   <- ensureType v
-    vec <- liftIO $ newVector n
+    vec <- liftIO $ newVector n VUnit
     return $ VVec vec
 
 vecAssign :: KlFun3
@@ -148,8 +148,7 @@ vecRead vec idx = do
     ret <- liftIO (read vec' idx')
     case ret of
       Left exc -> throwError $ VectorErr exc
-      Right Nothing -> throwError $ VectorErr (NotInitialized idx')
-      Right (Just v) -> return v
+      Right v -> return v
 
 vectorp :: KlFun1
 vectorp = klEnsureType TyVec
@@ -225,12 +224,7 @@ eq v1 v2 = liftM VBool $ eq' v1 v2
     eq' (VVec v1)  (VVec v2)  = do
       v1' <- liftIO $ vectorToList v1
       v2' <- liftIO $ vectorToList v2
-      liftM and $ zipWithM eq'' v1' v2'
-      where
-        eq'' :: Maybe Val -> Maybe Val -> Kl Bool
-        eq'' Nothing Nothing = return True
-        eq'' (Just v1) (Just v2) = eq' v1 v2
-        eq'' _ _ = return False
+      liftM and $ zipWithM eq' v1' v2'
     eq' VStream{}  VStream{}  = return False
     eq' VUnit{}    VUnit{}    = return True
     eq' _          _          = return False
