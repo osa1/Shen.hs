@@ -5,13 +5,14 @@
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Types where
 
+import           KLambda.Vector
+
 import           Control.Applicative
 import           Control.Monad.Error
 import           Control.Monad.State
 import           Data.Binary
 import           Data.Hashable
 import qualified Data.HashMap.Strict as M
-import qualified Data.Vector.Mutable as MV
 import           GHC.Generics        (Generic)
 import           System.IO           (Handle)
 import           Text.Parsec         (ParseError)
@@ -47,7 +48,7 @@ data Val
     | VList Val Val
     | VFun Func
     | VSFun SFun
-    | VVec (MV.IOVector Val)
+    | VVec (Vector Val)
     | VStream Handle
     | VErr KlException
     | VUnit
@@ -96,6 +97,7 @@ data KlException
     | UserError String
     | UnboundSymbol Symbol
     | SerializationError Val
+    | VectorErr VectorException
     | ErrMsg String
     deriving Show
 
@@ -194,7 +196,7 @@ instance EnsureType Symbol where
     ensureType notSym =
       throwError TypeError{ foundTy = typeOf notSym, expectedTy = TySym }
 
-instance EnsureType (MV.IOVector Val) where
+instance EnsureType (Vector Val) where
     ensureType (VVec v) = return v
     ensureType notVec =
       throwError TypeError{ foundTy = typeOf notVec, expectedTy = TyVec }
@@ -218,5 +220,5 @@ instance KlVal Bool   where klVal = VBool
 instance KlVal Char   where klVal = VStr . (:[])
 instance KlVal Double where klVal = VNum
 instance KlVal Symbol where klVal = VSym
-instance KlVal (MV.IOVector Val) where klVal = VVec
+instance KlVal (Vector Val) where klVal = VVec
 instance KlVal Handle where klVal = VStream

@@ -5,16 +5,15 @@ module KLambda.Fun where
 import           KLambda.Env
 import           KLambda.Parser
 import           KLambda.Types
+import           KLambda.Vector
 
-import           Control.Monad          (liftM, liftM2)
+import           Control.Monad          (liftM, liftM2, zipWithM)
 import           Control.Monad.Error    (throwError)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.State    (get, gets, modify)
 import qualified Data.HashMap.Strict    as M
 import           Data.Time.Clock.POSIX  (getPOSIXTime)
-import qualified Data.Vector            as V
-import qualified Data.Vector.Mutable    as MV
-import           Prelude                hiding (exp)
+import           Prelude                hiding (exp, read)
 import           System.FilePath        ((</>))
 import           System.IO              (IOMode (..), hClose, hFlush, hGetChar,
                                          hPutStr, openFile)
@@ -127,7 +126,7 @@ intern v = do
 absvector :: KlFun1
 absvector v = do
     n   <- ensureType v
-    vec <- liftIO $ MV.new n
+    vec <- liftIO $ newVector n
     return $ VVec vec
 
 vecAssign :: KlFun3
@@ -136,15 +135,21 @@ vecAssign vec idx val = do
     idx' <- ensureType idx
     -- TODO: can we assume that Shen implementation in KLambda already does
     -- the bound checking? if so we can use `unsafeWrite`.
-    liftIO $ MV.write vec' idx' val
-    return vec
+    ret <- liftIO $ write vec' idx' val
+    case ret of
+      Left exc -> throwError $ VectorErr exc
+      Right _ -> return vec
 
 vecRead :: KlFun2
 vecRead vec idx = do
     vec' <- ensureType vec
     idx' <- ensureType idx
     -- TODO: same situation with `vecAssign`. `unsafeRead` can be used.
-    liftIO (MV.read vec' idx' :: IO Val)
+    ret <- liftIO (read vec' idx')
+    case ret of
+      Left exc -> throwError $ VectorErr exc
+      Right Nothing -> throwError $ VectorErr (NotInitialized idx')
+      Right (Just v) -> return v
 
 vectorp :: KlFun1
 vectorp = klEnsureType TyVec
@@ -217,14 +222,15 @@ eq v1 v2 = liftM VBool $ eq' v1 v2
     eq' (VNum n1)  (VNum n2)  = return $ n1 == n2
     eq' (VList v1 v2) (VList v1' v2') = liftM2 (&&) (eq' v1 v1') (eq' v2 v2')
     eq' VFun{}     VFun{}     = return False
-    eq' (VVec v1)  (VVec v2)  =
-      -- TODO: zipWithM for IOVectors ??
-      if MV.length v1 /= MV.length v2
-        then return False
-        else do
-          v1' <- liftIO $ V.freeze v1
-          v2' <- liftIO $ V.freeze v2
-          liftM V.and $ V.zipWithM eq' v1' v2'
+    eq' (VVec v1)  (VVec v2)  = do
+      v1' <- liftIO $ vectorToList v1
+      v2' <- liftIO $ vectorToList v2
+      liftM and $ zipWithM eq'' v1' v2'
+      where
+        eq'' :: Maybe Val -> Maybe Val -> Kl Bool
+        eq'' Nothing Nothing = return True
+        eq'' (Just v1) (Just v2) = eq' v1 v2
+        eq'' _ _ = return False
     eq' VStream{}  VStream{}  = return False
     eq' VUnit{}    VUnit{}    = return True
     eq' _          _          = return False
