@@ -63,26 +63,27 @@ instance Show Val where
     show (VStr s) = show s
     show (VNum n) = show n
     show lst@VList{} =
-        if null elems
-          then "()"
-          else let l = last elems
-                   f = init elems
-                   s = case l of
-                         VUnit -> ""
-                         _ -> " | " ++ show l
-                in "(" ++ unwords (map show f) ++ s ++ ")"
-      where elems :: [Val]
-            elems = listOfVList lst
-
+      if null elems
+        then "()"
+        else let l = last elems
+                 f = init elems
+                 s = case l of
+                       VUnit -> ""
+                       _ -> " | " ++ show l
+              in "(" ++ unwords (map show f) ++ s ++ ")"
+      where
+        elems :: [Val]
+        elems = listOfVList lst
     show VFun{} = "<function>"
     show VSFun{} = "<special form>"
-    -- show (VVec vec) = "[" ++ (unwords (map show $ unsafePerformIO $ toList vec)) ++ "]"
-    -- TODO: printing vector with uninitialized elements fails at runtime
-    -- TODO: reading uninitialized elements also fails
     show VVec{} = "<vector>"
     show VStream{} = "<stream>"
     show VErr{} = "<error>"
     show VUnit = "<unit>"
+
+toStr :: Val -> IO String
+toStr (VVec v) = liftIO (vectorToString v)
+toStr v = return (show v)
 
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc

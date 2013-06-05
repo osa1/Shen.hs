@@ -47,7 +47,7 @@ cn v1 v2 = do
     return $ VStr (s1 ++ s2)
 
 str :: KlFun1
-str v = return $ VStr (show v)
+str v = liftM VStr (liftIO $ toStr v)
 
 strp :: KlFun1
 strp = klEnsureType TyStr
