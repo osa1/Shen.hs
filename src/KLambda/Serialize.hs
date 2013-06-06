@@ -7,14 +7,13 @@
 module KLambda.Serialize where
 
 import           KLambda.Types
-import           KLambda.Utils          (toList)
+import           KLambda.Vector
 
 import           Control.Applicative    ((<$>), (<*>))
 import           Control.Monad.Error    (throwError)
 import           Control.Monad.IO.Class (liftIO)
 import           Data.Binary
 import qualified Data.HashMap.Strict    as M
-import qualified Data.Vector.Mutable    as MV
 import           GHC.Generics           (Generic)
 
 data SVal
@@ -67,16 +66,22 @@ instance Serializable Val SVal where
     deserialize (SList s1 s2) = VList <$> deserialize s1 <*> deserialize s2
     deserialize (SFunction f) = VFun <$> deserialize f
     deserialize SSFun{} = undefined
+    deserialize (SVec vals) = VVec <$> deserialize vals
+    deserialize SUnit = return VUnit
 
 instance Serializable Func SFunc where
     serialize (Closure env arg body) = SClosure <$> serialize env <*> return arg <*> return body
     serialize StdFun{} = undefined
+    deserialize = undefined
 
 instance Serializable SFun Symbol where
     serialize = undefined
+    deserialize = undefined
 
-instance Serializable (MV.IOVector Val) [SVal] where
-    serialize vec = mapM serialize =<< liftIO (toList vec)
+instance Serializable (Vector Val) [SVal] where
+    serialize vec = mapM serialize =<< liftIO (vectorToList vec)
+    deserialize lst = liftIO . listToVector =<< mapM deserialize lst
 
 instance Serializable LexEnv SLexEnv where
     serialize env = SLexEnv <$> mapM (\(k, v) -> (,) k <$> serialize v) (M.toList env)
+    deserialize (SLexEnv alst) = M.fromList <$> mapM (\(k, v) -> (,) k <$> deserialize v) alst
