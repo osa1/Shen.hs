@@ -53,7 +53,7 @@ instance Serializable Val SVal where
     serialize (VNum n) = return (SNum n)
     serialize (VList v1 v2) = SList <$> serialize v1 <*> serialize v2
     serialize (VFun f) = SFunction <$> serialize f
-    serialize (VSFun sf) = SSFun <$> serialize sf
+    serialize v@VSFun{} = throwError (SerializationError v)
     serialize (VVec vec) = SVec <$> serialize vec
     serialize v@VStream{} = throwError (SerializationError v)
     serialize v@VErr{} = throwError (SerializationError v)
@@ -72,10 +72,6 @@ instance Serializable Val SVal where
 instance Serializable Func SFunc where
     serialize (Closure env arg body) = SClosure <$> serialize env <*> return arg <*> return body
     serialize StdFun{} = undefined
-    deserialize = undefined
-
-instance Serializable SFun Symbol where
-    serialize = undefined
     deserialize = undefined
 
 instance Serializable (Vector Val) [SVal] where
