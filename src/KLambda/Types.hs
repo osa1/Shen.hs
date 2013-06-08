@@ -95,6 +95,7 @@ data KlException
     = TypeError     { foundTy :: Type, expectedTy :: Type }
     | ArityMismatch { foundAr :: Int, expectedAr :: Int }
     | KlParseError ParseError
+    | KlLexerError String Int Int
     | UserError String
     | UnboundSymbol Symbol
     | SerializationError Val

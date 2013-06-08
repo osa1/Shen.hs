@@ -1,5 +1,8 @@
 {
 module KLambda.Lexer where
+
+import Control.Monad.Error (throwError)
+import qualified KLambda.Types as KL
 }
 
 
@@ -46,18 +49,21 @@ mkTok tok = \posn _ -> (tok, Right posn)
 
 data EOFPn = EOFPn deriving Show
 
-alexScanTokens' str = go (alexStartPos,'\n',[],str)
+alexScanTokens' sourceName str = go (alexStartPos,'\n',[],str)
   where go inp@(pos,_,_,str) =
           case alexScan inp 0 of
-                AlexEOF -> [(EOF, Left EOFPn)]
+                AlexEOF -> return [(EOF, Left EOFPn)]
                 AlexError ((AlexPn _ line column),_,_,_) ->
-                  error $ concat [ "lexical error at "
-                                 , show line
-                                 , " line, "
-                                 , show column
-                                 , " column"
-                                 ]
+                  throwError (KL.KlLexerError sourceName line column)
+--                   error $ concat [ "lexical error at "
+--                                  , show line
+--                                  , " line, "
+--                                  , show column
+--                                  , " column"
+--                                  ]
                 AlexSkip  inp' len     -> go inp'
-                AlexToken inp' len act -> act pos (take len str) : go inp'
+                AlexToken inp' len act -> do
+                  rest <- go inp'
+                  return (act pos (take len str) : rest)
 
 }

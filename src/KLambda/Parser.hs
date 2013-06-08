@@ -1,3 +1,4 @@
+{-# LANGUAGE FlexibleContexts       #-}
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
@@ -10,6 +11,7 @@ import           KLambda.Types
 
 import           Control.Applicative     ((<$>), (<*), (<*>))
 import           Control.Monad           (void)
+import           Control.Monad.Error     (MonadError, throwError)
 import           Prelude                 hiding (exp)
 import           Text.Parsec             hiding (string)
 import qualified Text.Parsec.KLambda.Exp as Exp
@@ -151,8 +153,18 @@ exp = choice
 exps :: KLambdaParser tokpos a => Parsec [tokpos] () [Exp]
 exps = many exp
 
+parseKl :: MonadError KlException m =>
+    Parsec [(L.KlTok, Either L.EOFPn L.AlexPosn)] () a -> [Char] -> String -> m a
+parseKl p src str =
+    case L.alexScanTokens' src str of
+      Left err -> throwError err
+      Right tks -> either (throwError . KlParseError) return (parse p src tks)
+
 parseText :: String -> IO ()
-parseText = parseTest (many exp <* tok L.EOF) . L.alexScanTokens'
+parseText = parseText' (many exp <* tok L.EOF)
 
 parseText' :: Show a => Parsec [L.KlToken] () a -> String -> IO ()
-parseText' p = parseTest p . L.alexScanTokens'
+parseText' p s = do
+    case L.alexScanTokens' "" s of
+      Left err -> print err
+      Right tks -> parseTest p tks

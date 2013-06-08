@@ -4,7 +4,6 @@ module KLambda.Main where
 import           KLambda.Env         (insertFunEnv)
 import           KLambda.Eval
 import qualified KLambda.Fun         as F
-import           KLambda.Lexer       (alexScanTokens')
 import           KLambda.Parser
 import           KLambda.Types
 
@@ -18,7 +17,6 @@ import           System.Directory    (getDirectoryContents)
 import           System.Environment  (getArgs)
 import           System.FilePath     ((</>))
 import           System.IO           (hFlush, stdin, stdout)
-import           Text.Parsec         (parse)
 
 stdenv :: Env
 stdenv = (F.stdenv, M.fromList stdvars)
@@ -43,7 +41,7 @@ readAndEval = do
       putStr "> "
       hFlush stdout
     input <- liftIO getLine
-    case parse exps "klambda" (alexScanTokens' input) of
+    case parseKl exps "klambda" input of
       Left err -> do
         liftIO $ print err
         readAndEval
@@ -61,7 +59,7 @@ evalFiles :: [FilePath] -> Kl ()
 evalFiles [] = return ()
 evalFiles (path:paths) = do
     file <- liftIO $ readFile path
-    case parse exps path (alexScanTokens' file) of
+    case parseKl exps path file of
       Left err    -> liftIO $ print err
       Right exps' -> do
         forM_ exps' $ eval M.empty
