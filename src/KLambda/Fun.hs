@@ -254,6 +254,12 @@ debug str val = do
     liftIO $ putStrLn (str' ++ show val ++ "\n")
     return val
 
+debug1 :: KlFun3
+debug1 str val retval = do
+    str' <- ensureType str
+    liftIO $ putStrLn $ concat [ str', show val, " :: ", show $ typeOf val, "\n" ]
+    return retval
+
 -- Standard environment
 -- --------------------------------------------------------
 
@@ -296,4 +302,5 @@ stdenv = M.fromList
   , ("get-time", StdFun getTime)
   , ("parse-val", StdFun parseVal)
   , ("debug", StdFun debug)
+  , ("debug1", StdFun debug1)
   ]
