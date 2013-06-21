@@ -41,6 +41,7 @@ listOf p = do
       Right r  -> return r
       Left err -> fail $ show err
   where pred VList{} = True
+        pred VUnit{} = True
         pred _       = False
 
 tok :: Stream [Val] m Val => Val -> ParsecT [Val] u m Val
