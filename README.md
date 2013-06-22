@@ -6,9 +6,9 @@ Shen.hs is a K Lambda interpreter written in Haskell. It's main goal is to run S
 
 Shen test suite runs with following result:
 
-    passed ... 94.0
-    failed ...34.0
-    pass rate ...73.4375%
+    passed ... 120
+    failed ...8
+    pass rate ...93.75%
 
 And benchmarks fails with: `UserError "==> is not a legitimate function name.\r\n"`.
 
