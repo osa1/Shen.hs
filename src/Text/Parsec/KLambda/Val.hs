@@ -63,11 +63,13 @@ anySymbol = satisfy p <?> "symbol"
 
 symbol :: Monad m => String -> ParsecT [Val] u m Val
 -- FIXME: this part is hacky
-symbol "true" = satisfy p <?> "symbol \"true\""
+symbol "true" = satisfy p <?> show (VSym (Symbol "true"))
   where p t = case t of (VBool True) -> True
+                        (VSym (Symbol "true")) -> True
                         _ -> False
-symbol "false" = satisfy p <?> "symbol \"false\""
+symbol "false" = satisfy p <?> show (VSym (Symbol "false"))
   where p t = case t of (VBool False) -> True
+                        (VSym (Symbol "false")) -> True
                         _ -> False
 symbol s = satisfy p <?> "symbol \"" ++ s ++ "\""
   where p t = case t of VSym (Symbol s') -> s == s'
