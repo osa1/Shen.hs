@@ -61,7 +61,9 @@ instance Show Val where
     show (VSym (Symbol s)) = s
     show (VBool b) = if b then "true" else "false"
     show (VStr s) = show s
-    show (VNum n) = show n
+    show (VNum n)
+      | floor n == ceiling n = show (floor n)
+      | otherwise = show n
     show lst@VList{} =
       if null elems
         then "()"
