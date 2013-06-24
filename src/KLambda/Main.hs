@@ -58,12 +58,15 @@ readAndEval = do
 evalFiles :: [FilePath] -> Kl ()
 evalFiles [] = return ()
 evalFiles (path:paths) = do
+    liftIO $ do
+      putStr ("loading file: " ++ path ++ " ...")
+      hFlush stdout
     file <- liftIO $ readFile path
     case parseKl exps path file of
       Left err    -> liftIO $ print err
       Right exps' -> do
         forM_ exps' $ eval M.empty
-        liftIO $ putStrLn $ "loaded file: " ++ path
+        liftIO $ putStrLn "loaded."
     evalFiles paths
 
 loadShen :: KlFun1
@@ -91,5 +94,10 @@ main = do
     -- and it should be added to standard environment. Solution to this may
     -- be harder than expected because of circular import problems.
     let env = insertFunEnv (Symbol "load-shen") (StdFun loadShen) stdenv
-    r <- runErrorT $ evalStateT (runKl $ evalFiles args >> readAndEval) env
-    print r
+    case args of
+      ["--shen", path] -> do
+        r <- runErrorT $ evalStateT (runKl $ eval M.empty (EApp (ESym "load-shen") (Just (EStr path)))) env
+        print r
+      files -> do
+        r <- runErrorT $ evalStateT (runKl $ evalFiles files >> readAndEval) env
+        print r
