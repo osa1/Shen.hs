@@ -9,6 +9,7 @@ import           KLambda.Types
 import           Control.Monad.Error (catchError, throwError)
 import           Control.Monad.State hiding (guard)
 import qualified Data.HashMap.Strict as M
+import           Data.Maybe          (fromMaybe)
 import           Prelude             hiding (exp, lookup)
 import           Text.Parsec         (parse)
 
@@ -33,9 +34,7 @@ evalKl env exp = do
   val <- eval env exp
   case parse exps "klambda" [val] of
     Left err   -> throwError $ KlParseError err
-    Right args -> do
-      vals <- mapM (eval env) args
-      return $ last vals
+    Right args -> liftM last $ mapM (eval env) args
 
 freeze :: SFun
 freeze env exp = return $ VFun $ Closure env Nothing exp
@@ -57,23 +56,16 @@ specials = M.fromList
   ]
 
 eval :: LexEnv -> Exp -> Kl Val
-eval env (ESym s) =
-    return $ case lookup s env of
-               Nothing -> VSym (Symbol s)
-               Just v  -> v
-eval _ (EBool b) = return $ VBool b
-eval _ (EStr s)  = return $ VStr s
-eval _ (ENum n)  = return $ VNum n
-eval _ EUnit     = return VUnit
+eval env (ESym s) = return $ fromMaybe (VSym (Symbol s)) (lookup s env)
+eval _ (EBool b)  = return $ VBool b
+eval _ (EStr s)   = return $ VStr s
+eval _ (ENum n)   = return $ VNum n
+eval _ EUnit      = return VUnit
 eval env (ELambda param body) =
     return $ VFun (Closure env param body)
 eval env (EIf guard then_ else_) = do
-    g <- eval env guard
-    case g of
-      VBool True  -> eval env then_
-      VBool False -> eval env else_
-      notBool ->
-        throwError TypeError{ foundTy = typeOf notBool, expectedTy = TyBool }
+    g <- ensureType =<< eval env guard
+    eval env (if g then then_ else else_)
 
 eval env (EApp exp Nothing) = do
     val <- eval env exp
