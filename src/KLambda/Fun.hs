@@ -18,6 +18,7 @@ import           System.FilePath        ((</>))
 import           System.IO              (IOMode (..), hClose, hFlush, hPutStr,
                                          openFile)
 import           System.IO.Error        (tryIOError)
+import           System.Plugins.Load    (LoadStatus (..), load_)
 
 returnKl :: a -> Kl a
 returnKl = return
@@ -234,8 +235,20 @@ getTime _ = do
     t <- liftIO getPOSIXTime
     return $ VNum . fromIntegral . fromEnum $ t
 
+-- Dynamic load
 -- --------------------------------------------------------
 
+dynload :: KlFun2
+dynload mdl fun = do
+    modulePath <- ensureType mdl
+    funName    <- ensureType fun
+    ret <- liftIO $ tryIOError (load_ modulePath [] funName)
+    case ret of
+      Left ioerror -> throwError $ IOError ioerror
+      Right loadmsg ->
+        case loadmsg of
+          LoadFailure msg -> throwError $ DynamicLoadError (show msg)
+          LoadSuccess _ (f :: KlFun1) -> return (VFun (StdFun f))
 
 -- Standard environment
 -- --------------------------------------------------------
@@ -277,4 +290,5 @@ stdenv = M.fromList
   , ("close", StdFun close)
   , ("=", StdFun eq)
   , ("get-time", StdFun getTime)
+  , ("dynload", StdFun dynload)
   ]

@@ -14,20 +14,69 @@ executable Shen.hs
   main-is:             Main.hs
   other-modules:       KLambda.Lexer
   ghc-options:         -O2
-  build-depends:       base >= 4.5 && < 4.7,
-                       parsec ==3.1.*,
-                       unordered-containers ==0.2.*,
-                       mtl ==2.1.*,
-                       array ==0.4.*,
-                       vector ==0.10.*,
-                       transformers ==0.3.*,
-                       hashable ==1.2.*,
-                       time ==1.4.*,
-                       filepath ==1.3.*,
-                       directory==1.2.*,
-                       containers==0.5.*,
-                       binary==0.7.*,
-                       bytestring ==0.10.*
+  build-depends:         base >= 4.5 && < 4.7
+                       , parsec ==3.1.*
+                       , unordered-containers ==0.2.*
+                       , mtl ==2.1.*
+                       , array ==0.4.*
+                       , vector ==0.10.*
+                       , transformers ==0.3.*
+                       , hashable ==1.2.*
+                       , time ==1.4.*
+                       , filepath ==1.3.*
+                       , directory==1.2.*
+                       , containers==0.5.*
+                       , binary==0.5.*
+                       , bytestring ==0.10.*
+                       , plugins ==1.5.*
   hs-source-dirs:      src
   build-tools:         alex
 
+executable Shen.hs-test
+  main-is:             Test.hs
+  other-modules:       KLambda.Lexer
+  ghc-options:         -O2
+  build-depends:         base >= 4.5 && < 4.7
+                       , parsec ==3.1.*
+                       , unordered-containers ==0.2.*
+                       , mtl ==2.1.*
+                       , array ==0.4.*
+                       , vector ==0.10.*
+                       , transformers ==0.3.*
+                       , hashable ==1.2.*
+                       , time ==1.4.*
+                       , filepath ==1.3.*
+                       , directory==1.2.*
+                       , containers==0.5.*
+                       , binary==0.5.*
+                       , bytestring ==0.10.*
+                       , plugins ==1.5.*
+  hs-source-dirs:      src
+  build-tools:         alex
+
+library
+  exposed-modules:     KLambda.Types,
+                       KLambda.Parser
+  other-modules:       KLambda.Env,
+                       KLambda.Eval,
+                       KLambda.Lexer,
+                       KLambda.Vector,
+                       Text.Parsec.KLambda.Exp,
+                       Text.Parsec.KLambda.Val
+  build-depends:         base >= 4.5 && < 4.7
+                       , parsec ==3.1.*
+                       , unordered-containers ==0.2.*
+                       , mtl ==2.1.*
+                       , array ==0.4.*
+                       , vector ==0.10.*
+                       , transformers ==0.3.*
+                       , hashable ==1.2.*
+                       , time ==1.4.*
+                       , filepath ==1.3.*
+                       , directory==1.2.*
+                       , containers==0.5.*
+                       , binary==0.5.*
+                       , bytestring ==0.10.*
+                       -- , plugins ==1.5.*
+  hs-source-dirs:      src
+  build-tools:         alex

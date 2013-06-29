@@ -105,6 +105,7 @@ data KlException
     | VectorErr VectorException
     | ErrMsg String
     | IOError IOError
+    | DynamicLoadError String
     deriving Show
 
 instance Error KlException where
@@ -123,8 +124,9 @@ newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
 type SFun = LexEnv -> Exp -> Kl Val
 
 class KlFun a where
-    apply :: a -> Maybe Val -> Kl Val
-    arity :: a -> Int
+    apply    :: a -> Maybe Val -> Kl Val
+    arity    :: a -> Int
+    mkKlFun1 :: a -> (Val -> Kl Val)
 
 type KlFun0 = Kl Val
 type KlFun1 = Val -> KlFun0
@@ -138,18 +140,26 @@ instance KlFun (Kl Val) where
     apply f Nothing = f
     apply _ Just{}  = throwError ArityMismatch{foundAr=1, expectedAr=0}
     arity _ = 0
+    mkKlFun1 f _ = f
+
 instance KlFun (Val -> Kl Val) where
     apply f Nothing = return $ VFun . StdFun $ f
     apply f (Just e) = f e
     arity _ = 1
+    mkKlFun1 = id
+
 instance KlFun (Val -> Val -> Kl Val) where
     apply f Nothing = return $ VFun . StdFun $ f
     apply f (Just e) = return (VFun . StdFun $ f e)
     arity _ = 2
+    mkKlFun1 f val1 =
+      return (VFun (StdFun (apply f (Just val1))))
+
 instance KlFun (Val -> Val -> Val -> Kl Val) where
     apply f Nothing = return $ VFun . StdFun $ f
     apply f (Just e) = return (VFun . StdFun $ f e)
     arity _ = 3
+    mkKlFun1 f val1 = undefined
 
 --instance Show Func where
     --show (Closure env arg body) = "Closure{" ++ show env ++ "," ++ show arg ++ "," ++ show body ++ "}"
