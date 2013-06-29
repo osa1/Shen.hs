@@ -10,6 +10,10 @@ category:            Language
 build-type:          Simple
 cabal-version:       >=1.8
 
+flag devel
+  description:         Build Shen.hs-test executable
+  default:             False
+
 executable Shen.hs
   main-is:             Main.hs
   other-modules:       KLambda.Lexer
@@ -33,6 +37,8 @@ executable Shen.hs
   build-tools:         alex
 
 executable Shen.hs-test
+  if !flag(devel)
+    buildable:         False
   main-is:             Test.hs
   other-modules:       KLambda.Lexer
   ghc-options:         -O2
