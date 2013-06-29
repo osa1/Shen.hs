@@ -69,14 +69,14 @@ evalFiles (path:paths) = do
         liftIO $ putStrLn "loaded."
     evalFiles paths
 
-loadShen :: KlFun1
-loadShen path = do
+loadShen' :: KlFun1
+loadShen' path = do
     path' <- ensureType path
     dirContents <- liftIO $ getDirectoryContents path'
     let ss = S.fromList shenSources
         fs = S.fromList dirContents
     if ss `S.isSubsetOf` fs
-      then evalFiles (map (path' </>) shenSources) >> eval M.empty (EApp (ESym "shen.shen") Nothing)
+      then evalFiles (map (path' </>) shenSources) >> return VUnit
       else throwError $ UserError $ concat
              [ "cannot load Shen, this KLambda sources are missing in "
              , path' , ": ", intercalate ", " (S.toList (ss `S.difference` fs)) ]
@@ -84,8 +84,11 @@ loadShen path = do
     shenSources = [ "toplevel.kl", "core.kl", "sys.kl", "sequent.kl"
                   , "yacc.kl", "reader.kl", "prolog.kl", "track.kl"
                   , "load.kl", "writer.kl", "macros.kl", "declarations.kl"
-                  , "t-star.kl", "types.kl"
+                  , "t-star.kl" --, "types.kl"
                   ]
+
+loadShen :: KlFun1
+loadShen path = loadShen' path >> eval M.empty (EApp (ESym "shen.shen") Nothing)
 
 main :: IO ()
 main = do
