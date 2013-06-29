@@ -3,7 +3,6 @@
 module KLambda.Fun where
 
 import           KLambda.Env
-import           KLambda.Parser
 import           KLambda.Types
 import           KLambda.Vector
 
@@ -19,7 +18,6 @@ import           System.FilePath        ((</>))
 import           System.IO              (IOMode (..), hClose, hFlush, hPutStr,
                                          openFile)
 import           System.IO.Error        (tryIOError)
-import           Text.Parsec
 
 returnKl :: a -> Kl a
 returnKl = return
@@ -236,28 +234,8 @@ getTime _ = do
     t <- liftIO getPOSIXTime
     return $ VNum . fromIntegral . fromEnum $ t
 
--- Debugging
 -- --------------------------------------------------------
 
-parseVal :: KlFun1
-parseVal val = do
-    liftIO $ print val
-    case parse exp "parseVal" [val] of
-      Left err -> liftIO $ print err
-      Right exp -> liftIO $ print exp
-    return VUnit
-
-debug :: KlFun2
-debug str val = do
-    str' <- ensureType str
-    liftIO $ putStrLn (str' ++ show val ++ "\n")
-    return val
-
-debug1 :: KlFun3
-debug1 str val retval = do
-    str' <- ensureType str
-    liftIO $ putStrLn $ concat [ str', show val, " :: ", show $ typeOf val, "\n" ]
-    return retval
 
 -- Standard environment
 -- --------------------------------------------------------
@@ -299,7 +277,4 @@ stdenv = M.fromList
   , ("close", StdFun close)
   , ("=", StdFun eq)
   , ("get-time", StdFun getTime)
-  , ("parse-val", StdFun parseVal)
-  , ("debug", StdFun debug)
-  , ("debug1", StdFun debug1)
   ]
