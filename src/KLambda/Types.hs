@@ -15,7 +15,6 @@ import           Data.Hashable
 import qualified Data.HashMap.Strict as M
 import           GHC.Generics        (Generic)
 import           System.IO           (Handle)
-import           System.IO.Error     (IOError)
 import           Text.Parsec         (ParseError)
 
 type Number = Double
@@ -124,9 +123,9 @@ newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
 type SFun = LexEnv -> Exp -> Kl Val
 
 class KlFun a where
-    apply    :: a -> Maybe Val -> Kl Val
-    arity    :: a -> Int
-    mkKlFun1 :: a -> (Val -> Kl Val)
+    apply  :: a -> Maybe Val -> Kl Val
+    arity  :: a -> Int
+    mkFun1 :: a -> (Val -> Kl Val)
 
 type KlFun0 = Kl Val
 type KlFun1 = Val -> KlFun0
@@ -137,29 +136,28 @@ data Func = Closure LexEnv (Maybe Symbol) Exp
           | forall f. (KlFun f) => StdFun f
 
 instance KlFun (Kl Val) where
-    apply f Nothing = f
-    apply _ Just{}  = throwError ArityMismatch{foundAr=1, expectedAr=0}
-    arity _ = 0
-    mkKlFun1 f _ = f
+    apply f Nothing  = f
+    apply _ Just{}   = throwError ArityMismatch{foundAr=1, expectedAr=0}
+    arity _          = 0
+    mkFun1 f _       = f
 
 instance KlFun (Val -> Kl Val) where
-    apply f Nothing = return $ VFun . StdFun $ f
+    apply f Nothing  = return $ VFun . StdFun $ f
     apply f (Just e) = f e
-    arity _ = 1
-    mkKlFun1 = id
+    arity _          = 1
+    mkFun1           = id
 
 instance KlFun (Val -> Val -> Kl Val) where
-    apply f Nothing = return $ VFun . StdFun $ f
+    apply f Nothing  = return $ VFun . StdFun $ f
     apply f (Just e) = return (VFun . StdFun $ f e)
-    arity _ = 2
-    mkKlFun1 f val1 =
-      return (VFun (StdFun (apply f (Just val1))))
+    arity _          = 2
+    mkFun1 f val1 = apply f (Just val1)
 
 instance KlFun (Val -> Val -> Val -> Kl Val) where
-    apply f Nothing = return $ VFun . StdFun $ f
+    apply f Nothing  = return $ VFun . StdFun $ f
     apply f (Just e) = return (VFun . StdFun $ f e)
-    arity _ = 3
-    mkKlFun1 f val1 = undefined
+    arity _          = 3
+    mkFun1 f val1    = apply f (Just val1)
 
 --instance Show Func where
     --show (Closure env arg body) = "Closure{" ++ show env ++ "," ++ show arg ++ "," ++ show body ++ "}"
