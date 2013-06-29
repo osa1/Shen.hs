@@ -11,13 +11,13 @@ import           Control.Monad          (liftM, liftM2, zipWithM)
 import           Control.Monad.Error    (throwError)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.State    (get, gets, modify)
+import qualified Data.ByteString        as BS
 import qualified Data.HashMap.Strict    as M
 import           Data.Time.Clock.POSIX  (getPOSIXTime)
 import           Prelude                hiding (exp, read)
 import           System.FilePath        ((</>))
-import           System.IO              (IOMode (..), hClose, hFlush, hGetChar,
-                                         hPutStr, openFile)
-import           System.IO.Error        (tryIOError)
+import           System.IO              (IOMode (..), hClose, hFlush, hPutStr,
+                                         openFile)
 import           Text.Parsec
 
 returnKl :: a -> Kl a
@@ -181,10 +181,8 @@ pr s stream = do
 readByte :: KlFun1
 readByte stream = do
     handle <- ensureType stream
-    byte <- liftIO $ tryIOError (hGetChar handle)
-    return . VNum $ case byte of
-                      Left _  -> -1
-                      Right b -> fromIntegral $ fromEnum b
+    byte <- liftIO $ BS.hGet handle 1
+    return . VNum $ if BS.null byte then -1 else fromIntegral (head (BS.unpack byte))
 
 open :: KlFun3
 open _ path dir = do
