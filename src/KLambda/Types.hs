@@ -15,6 +15,7 @@ import           Data.Hashable
 import qualified Data.HashMap.Strict as M
 import           GHC.Generics        (Generic)
 import           System.IO           (Handle)
+import           System.IO.Error     (IOError)
 import           Text.Parsec         (ParseError)
 
 type Number = Double
@@ -103,6 +104,7 @@ data KlException
     | SerializationError Val
     | VectorErr VectorException
     | ErrMsg String
+    | IOError IOError
     deriving Show
 
 instance Error KlException where

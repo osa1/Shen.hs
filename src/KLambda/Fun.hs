@@ -18,6 +18,7 @@ import           Prelude                hiding (exp, read)
 import           System.FilePath        ((</>))
 import           System.IO              (IOMode (..), hClose, hFlush, hPutStr,
                                          openFile)
+import           System.IO.Error        (tryIOError)
 import           Text.Parsec
 
 returnKl :: a -> Kl a
@@ -197,8 +198,10 @@ open _ path dir = do
     homedir <- case lookupSym (Symbol "*home-directory*") env of
                  Nothing -> error "*home-directory* is not set"
                  Just p  -> ensureType p
-    handle <- liftIO $ openFile (homedir </> path') mode
-    return $ VStream handle
+    handle <- liftIO $ tryIOError (openFile (homedir </> path') mode)
+    case handle of
+      Left err -> throwError $ IOError err
+      Right h  -> return $ VStream h
 
 close :: KlFun1
 close stream = do
