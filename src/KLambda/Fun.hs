@@ -107,11 +107,11 @@ set' v1 v2 = do
 
 value :: KlFun1
 value v = do
-  Symbol s <- ensureType v
-  senv     <- gets symEnv
-  case M.lookup s senv of
-    Nothing -> throwError $ UnboundSymbol (Symbol s)
-    Just v' -> return v'
+    Symbol s <- ensureType v
+    senv     <- gets symEnv
+    case M.lookup s senv of
+      Nothing -> throwError $ UnboundSymbol (Symbol s)
+      Just v' -> return v'
 
 -- Symbols
 -- --------------------------------------------------------
@@ -199,15 +199,13 @@ open _ path dir = do
                  Nothing -> error "*home-directory* is not set"
                  Just p  -> ensureType p
     handle <- liftIO $ tryIOError (openFile (homedir </> path') mode)
-    case handle of
-      Left err -> throwError $ IOError err
-      Right h  -> return $ VStream h
+    either (throwError . IOError) (return . VStream) handle
 
 close :: KlFun1
 close stream = do
-  handle <- ensureType stream
-  liftIO $ hClose handle
-  return VUnit
+    handle <- ensureType stream
+    liftIO $ hClose handle
+    return VUnit
 
 -- Streams and I/O
 -- --------------------------------------------------------
@@ -235,19 +233,19 @@ eq v1 v2 = liftM VBool $ eq' v1 v2
 
 getTime :: KlFun1
 getTime _ = do
-  t <- liftIO getPOSIXTime
-  return $ VNum . fromIntegral . fromEnum $ t
+    t <- liftIO getPOSIXTime
+    return $ VNum . fromIntegral . fromEnum $ t
 
 -- Debugging
 -- --------------------------------------------------------
 
 parseVal :: KlFun1
 parseVal val = do
-  liftIO $ print val
-  case parse exp "parseVal" [val] of
-    Left err -> liftIO $ print err
-    Right exp -> liftIO $ print exp
-  return VUnit
+    liftIO $ print val
+    case parse exp "parseVal" [val] of
+      Left err -> liftIO $ print err
+      Right exp -> liftIO $ print exp
+    return VUnit
 
 debug :: KlFun2
 debug str val = do
