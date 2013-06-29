@@ -248,7 +248,9 @@ dynload mdl fun = do
       Right loadmsg ->
         case loadmsg of
           LoadFailure msg -> throwError $ DynamicLoadError (show msg)
-          LoadSuccess _ (f :: KlFun1) -> return (VFun (StdFun f))
+          LoadSuccess _ (f :: KlFun1) -> do
+            modify (insertFunEnv (Symbol funName) (StdFun f))
+            return (VFun (StdFun f))
 
 -- Standard environment
 -- --------------------------------------------------------
