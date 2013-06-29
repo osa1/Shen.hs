@@ -6,7 +6,7 @@ import           KLambda.Env
 import           KLambda.Types
 import           KLambda.Vector
 
-import           Control.Monad          (liftM, liftM2, zipWithM)
+import           Control.Monad          (liftM, liftM2, unless, zipWithM)
 import           Control.Monad.Error    (throwError)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.State    (get, gets, modify)
@@ -14,11 +14,13 @@ import qualified Data.ByteString        as BS
 import qualified Data.HashMap.Strict    as M
 import           Data.Time.Clock.POSIX  (getPOSIXTime)
 import           Prelude                hiding (exp, read)
+import           System.Directory       (doesFileExist)
 import           System.FilePath        ((</>))
 import           System.IO              (IOMode (..), hClose, hFlush, hPutStr,
                                          openFile)
 import           System.IO.Error        (tryIOError)
 import           System.Plugins.Load    (LoadStatus (..), load_)
+import           System.Plugins.Utils   (replaceSuffix)
 
 returnKl :: a -> Kl a
 returnKl = return
@@ -242,6 +244,13 @@ dynload :: KlFun2
 dynload mdl fun = do
     modulePath <- ensureType mdl
     funName    <- ensureType fun
+
+    objExists <- liftIO $ doesFileExist modulePath
+    hiExists  <- liftIO $ doesFileExist (replaceSuffix modulePath ".hi")
+
+    unless objExists (throwError $ DynamicLoadError (".o file doesn't exist: " ++ modulePath))
+    unless hiExists  (throwError $ DynamicLoadError (".hi file doesn't exist: " ++ replaceSuffix modulePath ".hi"))
+
     ret <- liftIO $ tryIOError (load_ modulePath [] funName)
     case ret of
       Left ioerror -> throwError $ IOError ioerror
