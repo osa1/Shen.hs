@@ -1,11 +1,13 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts      #-}
+{-# LANGUAGE OverloadedStrings     #-}
 {-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 
 module Text.Parsec.KLambda.Val where
 
-import KLambda.Types
+import           KLambda.Types
 
-import Text.Parsec hiding (satisfy)
+import qualified Data.Text     as T
+import           Text.Parsec   hiding (satisfy)
 
 type Parser = Parsec [Val] ()
 
@@ -61,7 +63,7 @@ anySymbol = satisfy p <?> "symbol"
   where p t = case t of VSym _ -> True
                         _ -> False
 
-symbol :: Monad m => String -> ParsecT [Val] u m Val
+symbol :: Monad m => T.Text -> ParsecT [Val] u m Val
 -- FIXME: this part is hacky
 symbol "true" = satisfy p <?> show (VSym (Symbol "true"))
   where p t = case t of (VBool True) -> True
@@ -71,6 +73,6 @@ symbol "false" = satisfy p <?> show (VSym (Symbol "false"))
   where p t = case t of (VBool False) -> True
                         (VSym (Symbol "false")) -> True
                         _ -> False
-symbol s = satisfy p <?> "symbol \"" ++ s ++ "\""
+symbol s = satisfy p <?> "symbol \"" ++ T.unpack s ++ "\""
   where p t = case t of VSym (Symbol s') -> s == s'
                         _ -> False

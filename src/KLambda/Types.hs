@@ -2,6 +2,7 @@
 {-# LANGUAGE ExistentialQuantification  #-}
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE OverloadedStrings          #-}
 {-# OPTIONS_GHC -Wall #-}
 module KLambda.Types where
 
@@ -13,24 +14,29 @@ import           Control.Monad.State
 import           Data.Binary
 import           Data.Hashable
 import qualified Data.HashMap.Strict as M
+import qualified Data.Text           as T
+import           Data.Text.Binary    ()
 import           GHC.Generics        (Generic)
 import           System.IO           (Handle)
 import           Text.Parsec         (ParseError)
 
 type Number = Double
-newtype Symbol = Symbol String deriving (Show, Eq, Ord, Generic)
+newtype Symbol = Symbol T.Text deriving (Show, Eq, Ord, Generic)
 instance Binary Symbol
 
-symStr :: Symbol -> String
-symStr (Symbol s) = s
+class ToText a where
+    toText :: a -> T.Text
+
+instance ToText Symbol where
+    toText (Symbol s) = s
 
 instance Hashable Symbol where
     hashWithSalt i (Symbol s) = hashWithSalt i s
 
 data Exp
-    = ESym  String
+    = ESym  T.Text
     | EBool Bool
-    | EStr  String
+    | EStr  T.Text
     | ENum  Number
     | EApp  Exp (Maybe Exp)
     | ELambda (Maybe Symbol) Exp
@@ -40,10 +46,13 @@ data Exp
     deriving (Show, Generic)
 instance Binary Exp
 
+instance ToText Exp where
+    toText = T.pack . show
+
 data Val
     = VSym Symbol
     | VBool Bool
-    | VStr String
+    | VStr T.Text
     | VNum Number
     | VList Val Val
     | VFun Func
@@ -57,35 +66,44 @@ listOfVList :: Val -> [Val]
 listOfVList (VList v1 v2) = v1 : listOfVList v2
 listOfVList v             = [v]
 
-instance Show Val where
-    show (VSym (Symbol s)) = s
-    show (VBool b) = if b then "true" else "false"
-    show (VStr s) = show s
-    show (VNum n)
-      | floor n == ceiling n = show (floor n)
-      | otherwise = show n
-    show lst@VList{} =
+instance ToText Double where
+    toText = T.pack . show
+
+instance ToText Int where
+    toText = T.pack . show
+
+instance ToText Val where
+    toText (VSym (Symbol s)) = s
+    toText (VBool b) = if b then "true" else "false"
+    toText (VStr s) = s
+    toText (VNum n)
+      | (floor n :: Int) == (ceiling n :: Int) = toText (floor n :: Int)
+      | otherwise = toText n
+    toText lst@VList{} =
       if null elems
         then "()"
         else let l = last elems
                  f = init elems
                  s = case l of
                        VUnit -> ""
-                       _ -> " | " ++ show l
-              in "(" ++ unwords (map show f) ++ s ++ ")"
+                       _ -> " | " `T.append` toText l
+              in "(" `T.append` T.unwords (map toText f) `T.append` s `T.append` ")"
       where
         elems :: [Val]
         elems = listOfVList lst
-    show VFun{} = "<function>"
-    show VSFun{} = "<special form>"
-    show VVec{} = "<vector>"
-    show VStream{} = "<stream>"
-    show VErr{} = "<error>"
-    show VUnit = "<unit>"
+    toText VFun{} = "<function>"
+    toText VSFun{} = "<special form>"
+    toText VVec{} = "<vector>"
+    toText VStream{} = "<stream>"
+    toText VErr{} = "<error>"
+    toText VUnit = "<unit>"
 
-toStr :: Val -> IO String
-toStr (VVec v) = liftIO (vectorToString v)
-toStr v = return (show v)
+instance Show Val where
+    show = T.unpack . toText
+
+toStr :: Val -> IO T.Text
+toStr (VVec v) = liftIO (vectorToText v)
+toStr v = return (toText v)
 
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc
@@ -98,7 +116,7 @@ data KlException
     | ArityMismatch { foundAr :: Int, expectedAr :: Int }
     | KlParseError ParseError
     | KlLexerError String Int Int
-    | UserError String
+    | UserError T.Text
     | UnboundSymbol Symbol
     | SerializationError Val
     | VectorErr VectorException
@@ -110,9 +128,9 @@ data KlException
 instance Error KlException where
     strMsg = ErrMsg
 
-type SymEnv = M.HashMap String Val
-type FunEnv = M.HashMap String Func
-type LexEnv = M.HashMap String Val
+type SymEnv = M.HashMap T.Text Val
+type FunEnv = M.HashMap T.Text Func
+type LexEnv = M.HashMap T.Text Val
 
 type Env = (FunEnv, SymEnv)
 
@@ -180,9 +198,14 @@ typeOf VUnit{} = TyUnit
 class EnsureType a where
     ensureType :: Val -> Kl a
 
-instance EnsureType [Char] where
+instance EnsureType T.Text where
     ensureType (VStr s) = return s
     ensureType notStr   =
+      throwError TypeError{ foundTy = typeOf notStr, expectedTy = TyStr }
+
+instance EnsureType [Char] where
+    ensureType (VStr s) = return $ T.unpack s
+    ensureType notStr =
       throwError TypeError{ foundTy = typeOf notStr, expectedTy = TyStr }
 
 instance EnsureType Bool where
@@ -231,7 +254,7 @@ class KlVal a where
 instance KlVal Val    where klVal = id
 instance KlVal Int    where klVal = VNum . fromIntegral
 instance KlVal Bool   where klVal = VBool
-instance KlVal Char   where klVal = VStr . (:[])
+instance KlVal Char   where klVal = VStr . T.singleton
 instance KlVal Double where klVal = VNum
 instance KlVal Symbol where klVal = VSym
 instance KlVal (Vector Val) where klVal = VVec

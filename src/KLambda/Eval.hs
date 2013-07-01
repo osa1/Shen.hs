@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 module KLambda.Eval where
@@ -10,6 +11,7 @@ import           Control.Monad.Error (catchError, throwError)
 import           Control.Monad.State hiding (guard)
 import qualified Data.HashMap.Strict as M
 import           Data.Maybe          (fromMaybe)
+import qualified Data.Text           as T
 import           Prelude             hiding (exp, lookup)
 import           Text.Parsec         (parse)
 
@@ -27,7 +29,7 @@ instance KlFun Func where
 
     arity (Closure _ Nothing _) = 0
     arity Closure{}             = 1
-    arity (StdFun f) = arity f
+    arity (StdFun f)            = arity f
 
 evalKl :: SFun
 evalKl env exp = do
@@ -81,7 +83,7 @@ eval env (EApp exp Nothing) = do
             case M.lookup s specials of
               Nothing -> throwError $ UnboundSymbol s
               Just _  -> return $ VFun $ Closure env (Just (Symbol "X"))
-                                                     (EApp (ESym (symStr s)) (Just (ESym "X")))
+                                                     (EApp (ESym (toText s)) (Just (ESym "X")))
       VFun f ->
         if arity f == 0
           then apply f Nothing

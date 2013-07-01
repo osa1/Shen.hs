@@ -1,8 +1,9 @@
 {-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
+{-# LANGUAGE OverloadedStrings #-}
 module KLambda.Vector where
 
 import           Control.Monad       (liftM)
-import           Data.List           (intercalate)
+import qualified Data.Text           as T
 import qualified Data.Vector.Mutable as MV
 
 newtype Vector a = Vector (MV.IOVector a)
@@ -47,7 +48,7 @@ listToVector vals = do
       MV.write vec idx v
       iter vs vec (idx+1)
 
-vectorToString :: Show a => Vector a -> IO String
-vectorToString vec = do
+vectorToText :: Show a => Vector a -> IO T.Text
+vectorToText vec = do
     lst <- vectorToList vec
-    return $ "[" ++ intercalate " " (map show lst) ++ "]"
+    return $ "[" `T.append` T.intercalate " " (map (T.pack . show) lst) `T.append` "]"

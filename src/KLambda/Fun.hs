@@ -1,3 +1,4 @@
+{-# LANGUAGE OverloadedStrings   #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wall -fno-warn-name-shadowing #-}
 module KLambda.Fun where
@@ -12,12 +13,13 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.State    (get, gets, modify)
 import qualified Data.ByteString        as BS
 import qualified Data.HashMap.Strict    as M
+import qualified Data.Text              as T
+import qualified Data.Text.IO           as T
 import           Data.Time.Clock.POSIX  (getPOSIXTime)
 import           Prelude                hiding (exp, read)
 import           System.Directory       (doesFileExist)
 import           System.FilePath        ((</>))
-import           System.IO              (IOMode (..), hClose, hFlush, hPutStr,
-                                         openFile)
+import           System.IO              (IOMode (..), hClose, hFlush, openFile)
 import           System.IO.Error        (tryIOError)
 import           System.Plugins.Load    (LoadStatus (..), load_)
 import           System.Plugins.Utils   (replaceSuffix)
@@ -35,18 +37,18 @@ pos :: KlFun2
 pos v1 v2 = do
     s <- ensureType v1
     n :: Double <- ensureType v2
-    return $ VStr [s !! floor n] :: Kl Val
+    return $ VStr (T.singleton (T.index s (floor n)))
 
 tlstr :: KlFun1
 tlstr v = do
     s <- ensureType v
-    return $ VStr (tail s)
+    return $ VStr (T.drop 1 s)
 
 cn :: KlFun2
 cn v1 v2 = do
     s1 <- ensureType v1
     s2 <- ensureType v2
-    return $ VStr (s1 ++ s2)
+    return $ VStr (s1 `T.append` s2)
 
 str :: KlFun1
 str v = liftM VStr (liftIO $ toStr v)
@@ -57,12 +59,14 @@ strp = klEnsureType TyStr
 nToStr :: KlFun1
 nToStr v = do
     n :: Double <- ensureType v
-    return $ VStr [toEnum $ floor n]
+    return $ VStr (T.pack [toEnum $ floor n])
 
 strToN :: KlFun1
-strToN (VStr s) = return $ VNum . fromIntegral . sum $ map fromEnum s
-strToN (VNum n) = return $ VNum n
-strToN _        = error "strToN on some other value"
+strToN v = do
+    str <- ensureType v
+    if T.null str
+      then throwError $ UserError "string->n on empty string"
+      else return $ VNum (fromIntegral (fromEnum (T.head str)))
 
 -- Lists
 -- --------------------------------------------------------
@@ -166,7 +170,7 @@ simpleError s = do
 errorToString :: KlFun1
 errorToString e = do
     err :: KlException <- ensureType e
-    return $ VStr (show err)
+    return $ VStr (T.pack $ show err)
 
 -- Streams and I/O
 -- --------------------------------------------------------
@@ -176,7 +180,7 @@ pr s stream = do
     s' <- ensureType s
     handle <- ensureType stream
     liftIO $ do
-      hPutStr handle s'
+      T.hPutStr handle s'
       hFlush handle
     return $ VStr s'
 
@@ -194,10 +198,10 @@ open _ path dir = do
               "in"  -> return ReadMode
               "out" -> return WriteMode
                 -- TODO: maybe I should ensure this part and encode it in syntax tree
-              wrong -> throwError $ ErrMsg ("invalid open mode: " ++ wrong)
+              wrong -> throwError $ ErrMsg ("invalid open mode: " ++ T.unpack wrong)
     env <- get
     homedir <- case lookupSym (Symbol "*home-directory*") env of
-                 Nothing -> error "*home-directory* is not set"
+                 Nothing -> throwError $ UserError "*home-directory* is not set"
                  Just p  -> ensureType p
     handle <- liftIO $ tryIOError (openFile (homedir </> path') mode)
     either (throwError . IOError) (return . VStream) handle
@@ -258,13 +262,13 @@ dynload mdl fun = do
         case loadmsg of
           LoadFailure msg -> throwError $ DynamicLoadError (show msg)
           LoadSuccess _ (f :: KlFun1) -> do
-            modify (insertFunEnv (Symbol funName) (StdFun f))
+            modify (insertFunEnv (Symbol $ T.pack funName) (StdFun f))
             return (VFun (StdFun f))
 
 -- Standard environment
 -- --------------------------------------------------------
 
-stdenv :: M.HashMap String Func
+stdenv :: M.HashMap T.Text Func
 stdenv = M.fromList
   [ ("pos", StdFun pos)
   , ("tlstr", StdFun tlstr)

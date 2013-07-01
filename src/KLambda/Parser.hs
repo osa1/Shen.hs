@@ -2,6 +2,7 @@
 {-# LANGUAGE FlexibleInstances      #-}
 {-# LANGUAGE FunctionalDependencies #-}
 {-# LANGUAGE MultiParamTypeClasses  #-}
+{-# LANGUAGE OverloadedStrings      #-}
 {-# LANGUAGE TypeSynonymInstances   #-}
 {-# OPTIONS_GHC -Wall -fno-warn-unused-do-bind #-}
 module KLambda.Parser where
@@ -12,6 +13,7 @@ import           KLambda.Types
 import           Control.Applicative     ((<$>), (<*), (<*>))
 import           Control.Monad           (void)
 import           Control.Monad.Error     (MonadError, throwError)
+import qualified Data.Text               as T
 import           Prelude                 hiding (exp)
 import           Text.Parsec             hiding (string)
 import qualified Text.Parsec.KLambda.Exp as Exp
@@ -19,10 +21,10 @@ import qualified Text.Parsec.KLambda.Val as Val
 
 class KLambdaParser tokpos tok | tokpos -> tok where
     tok       :: tok -> Parsec [tokpos] () tok
-    string    :: Parsec [tokpos] () String
+    string    :: Parsec [tokpos] () T.Text
     num       :: Parsec [tokpos] () Number
     anySymbol :: Parsec [tokpos] () Symbol
-    symbol    :: String -> Parsec [tokpos] () tok
+    symbol    :: T.Text -> Parsec [tokpos] () tok
     unit      :: Parsec [tokpos] () ()
 
     listOf    :: Parsec [tokpos] () a -> Parsec [tokpos] () a
@@ -32,7 +34,7 @@ instance KLambdaParser L.KlToken L.KlTok where
 
     string = do
       L.Str s <- Exp.string
-      return s
+      return (T.pack s)
 
     num = do
       L.Number s <- Exp.num
@@ -40,7 +42,7 @@ instance KLambdaParser L.KlToken L.KlTok where
 
     anySymbol = do
       L.Symbol s <- Exp.anySymbol
-      return (Symbol s)
+      return (Symbol (T.pack s))
 
     symbol = Exp.symbol
 
@@ -154,7 +156,7 @@ exps :: KLambdaParser tokpos a => Parsec [tokpos] () [Exp]
 exps = many exp
 
 parseKl :: MonadError KlException m =>
-    Parsec [(L.KlTok, Either L.EOFPn L.AlexPosn)] () a -> [Char] -> String -> m a
+    Parsec [(L.KlTok, Either L.EOFPn L.AlexPosn)] () a -> String -> String -> m a
 parseKl p src str =
     case L.alexScanTokens' src str of
       Left err -> throwError err

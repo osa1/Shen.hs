@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -Wall #-}
+{-# LANGUAGE OverloadedStrings #-}
 module KLambda.Main where
 
 import           KLambda.Env         (insertFunEnv)
@@ -12,6 +13,8 @@ import           Control.Monad.State
 import qualified Data.HashMap.Strict as M
 import           Data.List           (intercalate)
 import qualified Data.Set            as S
+import qualified Data.Text           as T
+import qualified Data.Text.IO        as T
 import           Prelude             hiding (exp)
 import           System.Directory    (getDirectoryContents)
 import           System.Environment  (getArgs)
@@ -49,7 +52,7 @@ readAndEval = do
         vals <- liftM Just (mapM (eval M.empty) exps') `catchError` handler
         case vals of
           Nothing    -> return ()
-          Just vals' -> liftIO (putStrLn =<< toStr (last vals'))
+          Just vals' -> liftIO (T.putStrLn =<< toStr (last vals'))
         readAndEval
   where
     handler :: KlException -> Kl (Maybe [Val])
@@ -77,7 +80,7 @@ loadShen' path = do
         fs = S.fromList dirContents
     if ss `S.isSubsetOf` fs
       then evalFiles (map (path' </>) shenSources) >> return VUnit
-      else throwError $ UserError $ concat
+      else throwError $ UserError $ T.pack $ concat
              [ "cannot load Shen, this KLambda sources are missing in "
              , path' , ": ", intercalate ", " (S.toList (ss `S.difference` fs)) ]
   where
@@ -99,7 +102,7 @@ main = do
     let env = insertFunEnv (Symbol "load-shen") (StdFun loadShen) stdenv
     case args of
       ["--shen", path] -> do
-        r <- runErrorT $ evalStateT (runKl $ eval M.empty (EApp (ESym "load-shen") (Just (EStr path)))) env
+        r <- runErrorT $ evalStateT (runKl $ eval M.empty (EApp (ESym "load-shen") (Just (EStr (T.pack path))))) env
         print r
       files -> do
         r <- runErrorT $ evalStateT (runKl $ evalFiles files >> readAndEval) env

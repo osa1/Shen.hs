@@ -6,6 +6,7 @@ import           KLambda.Types
 import           Control.Monad       (liftM)
 import           Control.Monad.State (get)
 import qualified Data.HashMap.Strict as M
+import qualified Data.Text           as T
 
 funEnv :: Env -> FunEnv
 funEnv = fst
@@ -31,8 +32,8 @@ lookupSym' s = liftM (lookupSym s) get
 lookupFun' :: Symbol -> Kl (Maybe Func)
 lookupFun' s = liftM (lookupFun s) get
 
-insert :: String -> Val -> LexEnv -> LexEnv
+insert :: T.Text -> Val -> LexEnv -> LexEnv
 insert = M.insert
 
-lookup :: String -> LexEnv -> Maybe Val
+lookup :: T.Text -> LexEnv -> Maybe Val
 lookup = M.lookup

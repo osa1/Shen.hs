@@ -1,11 +1,12 @@
-{-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE FlexibleContexts      #-}
 {-# OPTIONS_GHC -Wall #-}
 
 module Text.Parsec.KLambda.Exp where
 
-import KLambda.Lexer
+import           KLambda.Lexer
 
-import Text.Parsec hiding (satisfy)
+import qualified Data.Text     as T
+import           Text.Parsec   hiding (satisfy)
 
 type Parser = Parsec [KlToken] ()
 
@@ -39,7 +40,7 @@ anySymbol = satisfy p <?> "symbol"
   where p t = case t of Symbol _ -> True
                         _ -> False
 
-symbol :: Monad m => String -> ParsecT [KlToken] u m KlTok
-symbol s = satisfy p <?> "symbol \"" ++ s ++ "\""
-  where p t = case t of Symbol s' -> s' == s
+symbol :: Monad m => T.Text -> ParsecT [KlToken] u m KlTok
+symbol s = satisfy p <?> "symbol \"" ++ T.unpack s ++ "\""
+  where p t = case t of Symbol s' -> s' == T.unpack s
                         _ -> False
