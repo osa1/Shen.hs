@@ -16,6 +16,7 @@ import           Data.Hashable
 import qualified Data.HashMap.Strict as M
 import qualified Data.Text           as T
 import           Data.Text.Binary    ()
+import qualified Data.Text.Class     as T
 import           GHC.Generics        (Generic)
 import           System.IO           (Handle)
 import           Text.Parsec         (ParseError)
@@ -24,10 +25,7 @@ type Number = Double
 newtype Symbol = Symbol T.Text deriving (Show, Eq, Ord, Generic)
 instance Binary Symbol
 
-class ToText a where
-    toText :: a -> T.Text
-
-instance ToText Symbol where
+instance T.ToText Symbol where
     toText (Symbol s) = s
 
 instance Hashable Symbol where
@@ -46,7 +44,7 @@ data Exp
     deriving (Show, Generic)
 instance Binary Exp
 
-instance ToText Exp where
+instance T.ToText Exp where
     toText = T.pack . show
 
 data Val
@@ -66,19 +64,13 @@ listOfVList :: Val -> [Val]
 listOfVList (VList v1 v2) = v1 : listOfVList v2
 listOfVList v             = [v]
 
-instance ToText Double where
-    toText = T.pack . show
-
-instance ToText Int where
-    toText = T.pack . show
-
-instance ToText Val where
+instance T.ToText Val where
     toText (VSym (Symbol s)) = s
     toText (VBool b) = if b then "true" else "false"
     toText (VStr s) = s
     toText (VNum n)
-      | (floor n :: Int) == (ceiling n :: Int) = toText (floor n :: Int)
-      | otherwise = toText n
+      | (floor n :: Int) == (ceiling n :: Int) = T.toText (floor n :: Int)
+      | otherwise = T.toText n
     toText lst@VList{} =
       if null elems
         then "()"
@@ -86,8 +78,8 @@ instance ToText Val where
                  f = init elems
                  s = case l of
                        VUnit -> ""
-                       _ -> " | " `T.append` toText l
-              in "(" `T.append` T.unwords (map toText f) `T.append` s `T.append` ")"
+                       _ -> " | " `T.append` T.toText l
+              in "(" `T.append` T.unwords (map T.toText f) `T.append` s `T.append` ")"
       where
         elems :: [Val]
         elems = listOfVList lst
@@ -99,11 +91,11 @@ instance ToText Val where
     toText VUnit = "<unit>"
 
 instance Show Val where
-    show = T.unpack . toText
+    show = T.unpack . T.toText
 
 toStr :: Val -> IO T.Text
 toStr (VVec v) = liftIO (vectorToText v)
-toStr v = return (toText v)
+toStr v = return (T.toText v)
 
 data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc

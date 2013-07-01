@@ -11,7 +11,7 @@ import           Control.Monad.Error (catchError, throwError)
 import           Control.Monad.State hiding (guard)
 import qualified Data.HashMap.Strict as M
 import           Data.Maybe          (fromMaybe)
-import qualified Data.Text           as T
+import qualified Data.Text.Class     as T
 import           Prelude             hiding (exp, lookup)
 import           Text.Parsec         (parse)
 
@@ -83,7 +83,7 @@ eval env (EApp exp Nothing) = do
             case M.lookup s specials of
               Nothing -> throwError $ UnboundSymbol s
               Just _  -> return $ VFun $ Closure env (Just (Symbol "X"))
-                                                     (EApp (ESym (toText s)) (Just (ESym "X")))
+                                                     (EApp (ESym (T.toText s)) (Just (ESym "X")))
       VFun f ->
         if arity f == 0
           then apply f Nothing

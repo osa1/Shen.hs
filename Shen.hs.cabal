@@ -67,12 +67,13 @@ executable Shen.hs-test
 library
   exposed-modules:     KLambda.Types,
                        KLambda.Parser
-  other-modules:       KLambda.Env,
-                       KLambda.Eval,
-                       KLambda.Lexer,
-                       KLambda.Vector,
-                       Text.Parsec.KLambda.Exp,
-                       Text.Parsec.KLambda.Val
+  other-modules:         KLambda.Env
+                       , KLambda.Eval
+                       , KLambda.Lexer
+                       , KLambda.Vector
+                       , Text.Parsec.KLambda.Exp
+                       , Text.Parsec.KLambda.Val
+                       , Data.Text.Class
   build-depends:         base >= 4.5 && < 4.7
                        , parsec ==3.1.*
                        , unordered-containers ==0.2.*

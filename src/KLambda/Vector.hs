@@ -4,6 +4,7 @@ module KLambda.Vector where
 
 import           Control.Monad       (liftM)
 import qualified Data.Text           as T
+import qualified Data.Text.Class     as T
 import qualified Data.Vector.Mutable as MV
 
 newtype Vector a = Vector (MV.IOVector a)
@@ -48,7 +49,7 @@ listToVector vals = do
       MV.write vec idx v
       iter vs vec (idx+1)
 
-vectorToText :: Show a => Vector a -> IO T.Text
+vectorToText :: T.ToText a => Vector a -> IO T.Text
 vectorToText vec = do
     lst <- vectorToList vec
-    return $ "[" `T.append` T.intercalate " " (map (T.pack . show) lst) `T.append` "]"
+    return $ "[" `T.append` T.intercalate " " (map T.toText lst) `T.append` "]"
