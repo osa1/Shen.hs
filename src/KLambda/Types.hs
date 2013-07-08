@@ -1,3 +1,4 @@
+{-# LANGUAGE DeriveDataTypeable         #-}
 {-# LANGUAGE DeriveGeneric              #-}
 {-# LANGUAGE ExistentialQuantification  #-}
 {-# LANGUAGE FlexibleInstances          #-}
@@ -9,6 +10,7 @@ module KLambda.Types where
 import           KLambda.Vector
 
 import           Control.Applicative
+import           Control.Monad.Catch
 import           Control.Monad.Error
 import           Control.Monad.State
 import           Data.Binary
@@ -17,6 +19,7 @@ import qualified Data.HashMap.Strict as M
 import qualified Data.Text           as T
 import           Data.Text.Binary    ()
 import qualified Data.Text.Class     as T
+import           Data.Typeable       hiding (typeOf)
 import           GHC.Generics        (Generic)
 import           System.IO           (Handle)
 import           Text.Parsec         (ParseError)
@@ -115,7 +118,9 @@ data KlException
     | ErrMsg String
     | IOError IOError
     | DynamicLoadError String
-    deriving Show
+    deriving (Show, Typeable)
+
+instance Exception KlException
 
 instance Error KlException where
     strMsg = ErrMsg
@@ -126,9 +131,8 @@ type LexEnv = M.HashMap T.Text Val
 
 type Env = (FunEnv, SymEnv)
 
-newtype Kl a = Kl { runKl :: StateT Env (ErrorT KlException IO) a }
-    deriving ( Functor, Applicative, Monad, MonadState Env
-             , MonadIO, MonadError KlException )
+newtype Kl a = Kl { runKl :: StateT Env IO a }
+    deriving ( Functor, Applicative, Monad, MonadState Env, MonadIO, MonadCatch )
 
 type SFun = LexEnv -> Exp -> Kl Val
 
@@ -147,7 +151,7 @@ data Func = Closure LexEnv (Maybe Symbol) Exp
 
 instance KlFun (Kl Val) where
     apply f Nothing  = f
-    apply _ Just{}   = throwError ArityMismatch{foundAr=1, expectedAr=0}
+    apply _ Just{}   = throwM ArityMismatch{foundAr=1, expectedAr=0}
     arity _          = 0
     mkFun1 f _       = f
 
@@ -193,52 +197,52 @@ class EnsureType a where
 instance EnsureType T.Text where
     ensureType (VStr s) = return s
     ensureType notStr   =
-      throwError TypeError{ foundTy = typeOf notStr, expectedTy = TyStr }
+      throwM TypeError{ foundTy = typeOf notStr, expectedTy = TyStr }
 
 instance EnsureType [Char] where
     ensureType (VStr s) = return $ T.unpack s
     ensureType notStr =
-      throwError TypeError{ foundTy = typeOf notStr, expectedTy = TyStr }
+      throwM TypeError{ foundTy = typeOf notStr, expectedTy = TyStr }
 
 instance EnsureType Bool where
     ensureType (VBool b) = return b
     ensureType notBool   =
-      throwError TypeError{ foundTy = typeOf notBool, expectedTy = TyBool }
+      throwM TypeError{ foundTy = typeOf notBool, expectedTy = TyBool }
 
 instance EnsureType Double where
     ensureType (VNum n) = return n
     ensureType notNum   =
-      throwError TypeError{ foundTy = typeOf notNum, expectedTy = TyNum }
+      throwM TypeError{ foundTy = typeOf notNum, expectedTy = TyNum }
 
 instance EnsureType Int where
     ensureType (VNum n) = return $ floor n
     ensureType notNum   =
-      throwError TypeError{ foundTy = typeOf notNum, expectedTy = TyNum }
+      throwM TypeError{ foundTy = typeOf notNum, expectedTy = TyNum }
 
 instance EnsureType Func where
     ensureType (VFun f) = return f
     ensureType notFun   =
-      throwError TypeError{ foundTy = typeOf notFun, expectedTy = TyFun }
+      throwM TypeError{ foundTy = typeOf notFun, expectedTy = TyFun }
 
 instance EnsureType Symbol where
     ensureType (VSym s) = return s
     ensureType notSym =
-      throwError TypeError{ foundTy = typeOf notSym, expectedTy = TySym }
+      throwM TypeError{ foundTy = typeOf notSym, expectedTy = TySym }
 
 instance EnsureType (Vector Val) where
     ensureType (VVec v) = return v
     ensureType notVec =
-      throwError TypeError{ foundTy = typeOf notVec, expectedTy = TyVec }
+      throwM TypeError{ foundTy = typeOf notVec, expectedTy = TyVec }
 
 instance EnsureType Handle where
     ensureType (VStream v) = return v
     ensureType notStream =
-      throwError TypeError{ foundTy = typeOf notStream, expectedTy = TyStream }
+      throwM TypeError{ foundTy = typeOf notStream, expectedTy = TyStream }
 
 instance EnsureType KlException where
     ensureType (VErr err) = return err
     ensureType notErr =
-      throwError TypeError{ foundTy = typeOf notErr, expectedTy = TyExc }
+      throwM TypeError{ foundTy = typeOf notErr, expectedTy = TyExc }
 
 class KlVal a where
     klVal :: a -> Val

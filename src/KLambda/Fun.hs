@@ -7,8 +7,8 @@ import           KLambda.Env
 import           KLambda.Types
 import           KLambda.Vector
 
+import           Control.Exception      (throw)
 import           Control.Monad          (liftM, liftM2, unless, zipWithM)
-import           Control.Monad.Error    (throwError)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.State    (get, gets, modify)
 import qualified Data.ByteString        as BS
@@ -65,7 +65,7 @@ strToN :: KlFun1
 strToN v = do
     str <- ensureType v
     if T.null str
-      then throwError $ UserError "string->n on empty string"
+      then throw $ UserError "string->n on empty string"
       else return $ VNum (fromIntegral (fromEnum (T.head str)))
 
 -- Lists
@@ -77,12 +77,12 @@ cons v1 v2 = return $ VList v1 v2
 hd :: KlFun1
 hd v = case v of
          VList v1 _ -> return v1
-         notVList   -> throwError TypeError{ foundTy = typeOf notVList, expectedTy = TyList }
+         notVList   -> throw TypeError{ foundTy = typeOf notVList, expectedTy = TyList }
 
 tl :: KlFun1
 tl v = case v of
          VList _ v2 -> return v2
-         notVList   -> throwError TypeError{ foundTy = typeOf notVList, expectedTy = TyList }
+         notVList   -> throw TypeError{ foundTy = typeOf notVList, expectedTy = TyList }
 
 consp :: KlFun1
 consp v = return . VBool $ case v of
@@ -115,7 +115,7 @@ value v = do
     Symbol s <- ensureType v
     senv     <- gets symEnv
     case M.lookup s senv of
-      Nothing -> throwError $ UnboundSymbol (Symbol s)
+      Nothing -> throw $ UnboundSymbol (Symbol s)
       Just v' -> return v'
 
 -- Symbols
@@ -143,7 +143,7 @@ vecAssign vec idx val = do
     -- the bound checking? if so we can use `unsafeWrite`.
     ret <- liftIO $ write vec' idx' val
     case ret of
-      Left exc -> throwError $ VectorErr exc
+      Left exc -> throw $ VectorErr exc
       Right _ -> return vec
 
 vecRead :: KlFun2
@@ -153,7 +153,7 @@ vecRead vec idx = do
     -- TODO: same situation with `vecAssign`. `unsafeRead` can be used.
     ret <- liftIO (read vec' idx')
     case ret of
-      Left exc -> throwError $ VectorErr exc
+      Left exc -> throw $ VectorErr exc
       Right v -> return v
 
 vectorp :: KlFun1
@@ -165,7 +165,7 @@ vectorp = klEnsureType TyVec
 simpleError :: KlFun1
 simpleError s = do
     msg <- ensureType s
-    throwError $ UserError msg
+    throw $ UserError msg
 
 errorToString :: KlFun1
 errorToString e = do
@@ -198,13 +198,13 @@ open _ path dir = do
               "in"  -> return ReadMode
               "out" -> return WriteMode
                 -- TODO: maybe I should ensure this part and encode it in syntax tree
-              wrong -> throwError $ ErrMsg ("invalid open mode: " ++ T.unpack wrong)
+              wrong -> throw $ ErrMsg ("invalid open mode: " ++ T.unpack wrong)
     env <- get
     homedir <- case lookupSym (Symbol "*home-directory*") env of
-                 Nothing -> throwError $ UserError "*home-directory* is not set"
+                 Nothing -> throw $ UserError "*home-directory* is not set"
                  Just p  -> ensureType p
     handle <- liftIO $ tryIOError (openFile (homedir </> path') mode)
-    either (throwError . IOError) (return . VStream) handle
+    either (throw . IOError) (return . VStream) handle
 
 close :: KlFun1
 close stream = do
@@ -252,15 +252,15 @@ dynload mdl fun = do
     objExists <- liftIO $ doesFileExist modulePath
     hiExists  <- liftIO $ doesFileExist (replaceSuffix modulePath ".hi")
 
-    unless objExists (throwError $ DynamicLoadError (".o file doesn't exist: " ++ modulePath))
-    unless hiExists  (throwError $ DynamicLoadError (".hi file doesn't exist: " ++ replaceSuffix modulePath ".hi"))
+    unless objExists (throw $ DynamicLoadError (".o file doesn't exist: " ++ modulePath))
+    unless hiExists  (throw $ DynamicLoadError (".hi file doesn't exist: " ++ replaceSuffix modulePath ".hi"))
 
     ret <- liftIO $ tryIOError (load_ modulePath [] funName)
     case ret of
-      Left ioerror -> throwError $ IOError ioerror
+      Left ioerror -> throw $ IOError ioerror
       Right loadmsg ->
         case loadmsg of
-          LoadFailure msg -> throwError $ DynamicLoadError (show msg)
+          LoadFailure msg -> throw $ DynamicLoadError (show msg)
           LoadSuccess _ (f :: KlFun1) -> do
             modify (insertFunEnv (Symbol $ T.pack funName) (StdFun f))
             return (VFun (StdFun f))

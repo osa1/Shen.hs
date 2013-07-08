@@ -2,24 +2,25 @@
 {-# LANGUAGE OverloadedStrings #-}
 module KLambda.Main where
 
-import           KLambda.Env         (insertFunEnv)
+import           KLambda.Env           (insertFunEnv)
 import           KLambda.Eval
-import qualified KLambda.Fun         as F
+import qualified KLambda.Fun           as F
 import           KLambda.Parser
 import           KLambda.Types
 
+import           Control.Monad.Catch
 import           Control.Monad.Error
 import           Control.Monad.State
-import qualified Data.HashMap.Strict as M
-import           Data.List           (intercalate)
-import qualified Data.Set            as S
-import qualified Data.Text           as T
-import qualified Data.Text.IO        as T
-import           Prelude             hiding (exp)
-import           System.Directory    (getDirectoryContents)
-import           System.Environment  (getArgs)
-import           System.FilePath     ((</>))
-import           System.IO           (hFlush, stdin, stdout)
+import qualified Data.HashMap.Strict   as M
+import           Data.List             (intercalate)
+import qualified Data.Set              as S
+import qualified Data.Text             as T
+import qualified Data.Text.IO          as T
+import           Prelude               hiding (exp)
+import           System.Directory      (getDirectoryContents)
+import           System.Environment    (getArgs)
+import           System.FilePath       ((</>))
+import           System.IO             (hFlush, stdin, stdout)
 
 stdenv :: Env
 stdenv = (F.stdenv, M.fromList stdvars)
@@ -49,7 +50,7 @@ readAndEval = do
         liftIO $ print err
         readAndEval
       Right exps' -> do
-        vals <- liftM Just (mapM (eval M.empty) exps') `catchError` handler
+        vals <- liftM Just (mapM (eval M.empty) exps') `catch` handler
         case vals of
           Nothing    -> return ()
           Just vals' -> liftIO (T.putStrLn =<< toStr (last vals'))
@@ -80,14 +81,14 @@ loadShen' path = do
         fs = S.fromList dirContents
     if ss `S.isSubsetOf` fs
       then evalFiles (map (path' </>) shenSources) >> return VUnit
-      else throwError $ UserError $ T.pack $ concat
+      else throwM $ UserError $ T.pack $ concat
              [ "cannot load Shen, this KLambda sources are missing in "
              , path' , ": ", intercalate ", " (S.toList (ss `S.difference` fs)) ]
   where
     shenSources = [ "toplevel.kl", "core.kl", "sys.kl", "sequent.kl"
                   , "yacc.kl", "reader.kl", "prolog.kl", "track.kl"
                   , "load.kl", "writer.kl", "macros.kl", "declarations.kl"
-                  , "t-star.kl" --, "types.kl"
+                  , "t-star.kl", "types.kl"
                   ]
 
 loadShen :: KlFun1
@@ -102,8 +103,8 @@ main = do
     let env = insertFunEnv (Symbol "load-shen") (StdFun loadShen) stdenv
     case args of
       ["--shen", path] -> do
-        r <- runErrorT $ evalStateT (runKl $ eval M.empty (EApp (ESym "load-shen") (Just (EStr (T.pack path))))) env
+        r <- evalStateT (runKl $ eval M.empty (EApp (ESym "load-shen") (Just (EStr (T.pack path))))) env
         print r
       files -> do
-        r <- runErrorT $ evalStateT (runKl $ evalFiles files >> readAndEval) env
+        r <- evalStateT (runKl $ evalFiles files >> readAndEval) env
         print r

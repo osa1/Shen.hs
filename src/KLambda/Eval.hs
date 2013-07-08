@@ -7,7 +7,7 @@ import           KLambda.Env
 import           KLambda.Parser      (exps)
 import           KLambda.Types
 
-import           Control.Monad.Error (catchError, throwError)
+import           Control.Monad.Catch
 import           Control.Monad.State hiding (guard)
 import qualified Data.HashMap.Strict as M
 import           Data.Maybe          (fromMaybe)
@@ -18,7 +18,7 @@ import           Text.Parsec         (parse)
 instance KlFun Func where
     apply (Closure env Nothing body) Nothing = eval env body
     apply c@Closure{}                Nothing = return $ VFun c
-    apply (Closure _   Nothing _   ) _       = throwError ArityMismatch{foundAr = 1, expectedAr = 0}
+    apply (Closure _   Nothing _   ) _       = throwM ArityMismatch{foundAr = 1, expectedAr = 0}
     apply (Closure env (Just (Symbol argName)) body) (Just arg) =
       eval (insert argName arg env) body
 
@@ -35,7 +35,7 @@ evalKl :: SFun
 evalKl env exp = do
   val <- eval env exp
   case parse exps "klambda" [val] of
-    Left err   -> throwError $ KlParseError err
+    Left err   -> throwM $ KlParseError err
     Right args -> liftM last $ mapM (eval env) args
 
 freeze :: SFun
@@ -43,7 +43,7 @@ freeze env exp = return $ VFun $ Closure env Nothing exp
 
 trapError :: SFun
 trapError env exp = return $
-    VSFun $ \env' exp' -> eval env exp `catchError` handler env' exp'
+    VSFun $ \env' exp' -> eval env exp `catch` handler env' exp'
   where
     handler :: LexEnv -> Exp -> KlException -> Kl Val
     handler env exp err = do
@@ -81,7 +81,7 @@ eval env (EApp exp Nothing) = do
               else return $ VFun f
           Nothing ->
             case M.lookup s specials of
-              Nothing -> throwError $ UnboundSymbol s
+              Nothing -> throwM $ UnboundSymbol s
               Just _  -> return $ VFun $ Closure env (Just (Symbol "X"))
                                                      (EApp (ESym (T.toText s)) (Just (ESym "X")))
       VFun f ->
@@ -89,7 +89,7 @@ eval env (EApp exp Nothing) = do
           then apply f Nothing
           else return $ VFun f
       VSFun s -> return $ VSFun s
-      notFun -> throwError TypeError{foundTy = typeOf notFun, expectedTy = TyFun}
+      notFun -> throwM TypeError{foundTy = typeOf notFun, expectedTy = TyFun}
 
 eval env (EApp exp (Just arg)) = do
     val <- eval env exp
@@ -99,11 +99,11 @@ eval env (EApp exp (Just arg)) = do
         case fun of
           Just f  -> apply f . Just =<< eval env arg
           Nothing -> case M.lookup s specials of
-                       Nothing -> throwError $ UnboundSymbol s
+                       Nothing -> throwM $ UnboundSymbol s
                        Just sv -> sv env arg
       VFun f -> apply f . Just =<< eval env arg
       VSFun s -> s env arg
-      notFun -> throwError TypeError{foundTy = typeOf notFun, expectedTy = TyFun}
+      notFun -> throwM TypeError{foundTy = typeOf notFun, expectedTy = TyFun}
 
 -- TODO: throw an error when redefining a primitive
 eval env (EDefun (Symbol name) lambda) = do
