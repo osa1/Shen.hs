@@ -1,3 +1,5 @@
+.PHONY: cabal-dev/bin/Shen.hs
+
 cabal-dev/bin/Shen.hs:
 	cabal-dev install --enable-executable-profiling --enable-library-profiling --disable-documentation --ghc-option=-fprof-auto
 
