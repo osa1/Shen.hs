@@ -194,8 +194,8 @@ readByte stream = do
     byte <- liftIO $ BS.hGet handle 1
     return . VNum $ if BS.null byte then -1 else fromIntegral (head (BS.unpack byte))
 
-open :: KlFun3
-open _ path dir = do
+open :: KlFun2
+open path dir = do
     path' <- ensureType path
     Symbol dir' <- ensureType dir
     mode <- case dir' of
