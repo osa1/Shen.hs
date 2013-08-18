@@ -8,7 +8,7 @@ import           KLambda.Types
 import           KLambda.Vector
 
 import           Control.Exception      (throw)
-import           Control.Monad          (liftM, liftM2, unless, zipWithM)
+import           Control.Monad          (liftM, liftM2, unless, when, zipWithM)
 import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.State    (get, gets, modify)
 import qualified Data.ByteString        as BS
@@ -37,7 +37,9 @@ pos :: KlFun2
 pos v1 v2 = do
     s <- ensureType v1
     n :: Double <- ensureType v2
-    return $ VStr (T.singleton (T.index s (floor n)))
+    let n' = floor n
+    when (T.length s <= n') $ throw IndexOutOfRange
+    return $ VStr (T.singleton (T.index s n'))
 
 tlstr :: KlFun1
 tlstr v = do
