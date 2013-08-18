@@ -118,6 +118,7 @@ data KlException
     | ErrMsg String
     | IOError IOError
     | DynamicLoadError String
+    | IndexOutOfRange
     deriving (Show, Typeable)
 
 instance Exception KlException
