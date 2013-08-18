@@ -13,11 +13,9 @@ import           Control.Applicative
 import           Control.Monad.Catch
 import           Control.Monad.Error
 import           Control.Monad.State
-import           Data.Binary
 import           Data.Hashable
 import qualified Data.HashMap.Strict as M
 import qualified Data.Text           as T
-import           Data.Text.Binary    ()
 import qualified Data.Text.Class     as T
 import           Data.Typeable       hiding (typeOf)
 import           GHC.Generics        (Generic)
@@ -26,7 +24,6 @@ import           Text.Parsec         (ParseError)
 
 type Number = Double
 newtype Symbol = Symbol T.Text deriving (Show, Eq, Ord, Generic)
-instance Binary Symbol
 
 instance T.ToText Symbol where
     toText (Symbol s) = s
@@ -45,7 +42,6 @@ data Exp
     | EDefun Symbol Exp
     | EUnit
     deriving (Show, Generic)
-instance Binary Exp
 
 instance T.ToText Exp where
     toText = T.pack . show
@@ -104,7 +100,6 @@ data Type
     = TySym | TyStr | TyNum | TyBool | TyStream | TyExc
     | TyVec | TyFun | TyList | TyTuple | TyClos | TyCont | TyUnit
     deriving (Show, Eq, Generic)
-instance Binary Type
 
 data KlException
     = TypeError     { foundTy :: Type, expectedTy :: Type }
