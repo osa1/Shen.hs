@@ -14,8 +14,8 @@ import           Control.Monad.State    (get, gets, modify)
 import qualified Data.ByteString        as BS
 import qualified Data.HashMap.Strict    as M
 import qualified Data.Text              as T
-import qualified Data.Text.IO           as T
 import           Data.Time.Clock.POSIX  (getPOSIXTime)
+import           Data.Word              (Word8)
 import           Prelude                hiding (exp, read)
 import           System.Directory       (doesFileExist)
 import           System.FilePath        ((</>))
@@ -175,14 +175,16 @@ errorToString e = do
 -- Streams and I/O
 -- --------------------------------------------------------
 
-pr :: KlFun2
-pr s stream = do
-    s' <- ensureType s
+writeByte :: KlFun2
+writeByte s stream = do
+    -- s should fit into 8 bits
+    s' <- ensureType s :: Kl Double
     handle <- ensureType stream
+    let s'' = fromIntegral (floor s' :: Integer) :: Word8
     liftIO $ do
-      T.hPutStr handle s'
+      BS.hPutStr handle (BS.singleton s'')
       hFlush handle
-    return $ VStr s'
+    return s
 
 readByte :: KlFun1
 readByte stream = do
@@ -299,7 +301,7 @@ stdenv = M.fromList
   , ("absvector?", StdFun vectorp)
   , ("simple-error", StdFun simpleError)
   , ("error-to-string", StdFun errorToString)
-  , ("pr", StdFun pr)
+  , ("write-byte", StdFun writeByte)
   , ("read-byte", StdFun readByte)
   , ("open", StdFun open)
   , ("close", StdFun close)
