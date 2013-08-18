@@ -1,0 +1,42 @@
+	Tue Jul  2 11:16 2013 Time and Allocation Profiling Report  (Final)
+
+	   Shen.hs +RTS -p -RTS toplevel.kl core.kl sys.kl sequent.kl yacc.kl reader.kl prolog.kl track.kl load.kl writer.kl macros.kl declarations.kl t-star.kl types.kl
+
+	total time  =       10.72 secs   (10723 ticks @ 1000 us, 1 processor)
+	total alloc = 10,202,434,728 bytes  (excludes profiling overheads)
+
+COST CENTRE MODULE  %time %alloc
+
+MAIN        MAIN     99.9   99.7
+
+
+                                                                       individual     inherited
+COST CENTRE       MODULE                             no.     entries  %time %alloc   %time %alloc
+
+MAIN              MAIN                               565           0   99.9   99.7   100.0  100.0
+ unstream/resize  Data.Text.Fusion                  1131       76620    0.0    0.1     0.0    0.1
+ CAF              KLambda.Main                      1128           0    0.1    0.2     0.1    0.2
+  unstream/resize Data.Text.Fusion                  1132          17    0.0    0.0     0.0    0.0
+ CAF              KLambda.Types                     1127           0    0.0    0.0     0.0    0.0
+  unstream/resize Data.Text.Fusion                  1135           1    0.0    0.0     0.0    0.0
+ CAF              KLambda.Parser                    1126           0    0.0    0.0     0.0    0.0
+  unstream/resize Data.Text.Fusion                  1130           3    0.0    0.0     0.0    0.0
+ CAF              KLambda.Eval                      1124           0    0.0    0.0     0.0    0.0
+  unstream/resize Data.Text.Fusion                  1134           3    0.0    0.0     0.0    0.0
+ CAF              KLambda.Lexer                     1123           0    0.0    0.0     0.0    0.0
+ CAF              Text.Parsec.KLambda.Exp           1121           0    0.0    0.0     0.0    0.0
+ CAF              Text.Parsec.KLambda.Val           1120           0    0.0    0.0     0.0    0.0
+  unstream/resize Data.Text.Fusion                  1136           1    0.0    0.0     0.0    0.0
+ CAF              KLambda.Fun                       1118           0    0.0    0.0     0.0    0.0
+  unstream/resize Data.Text.Fusion                  1133          20    0.0    0.0     0.0    0.0
+ CAF              Data.Hashable.Class                659           0    0.0    0.0     0.0    0.0
+ CAF              Data.Text.Array                    656           0    0.0    0.0     0.0    0.0
+ CAF              Data.Text.Internal                 654           0    0.0    0.0     0.0    0.0
+ CAF              GHC.Conc.Signal                    628           0    0.0    0.0     0.0    0.0
+ CAF              GHC.IO.Encoding                    625           0    0.0    0.0     0.0    0.0
+ CAF              GHC.IO.Handle.FD                   622           0    0.0    0.0     0.0    0.0
+ CAF              Text.Read.Lex                      608           0    0.0    0.0     0.0    0.0
+ CAF              GHC.IO.Encoding.Iconv              599           0    0.0    0.0     0.0    0.0
+ CAF              GHC.IO.FD                          596           0    0.0    0.0     0.0    0.0
+ CAF              GHC.TopHandler                     592           0    0.0    0.0     0.0    0.0
+ CAF              GHC.Integer.Logarithms.Internals   572           0    0.0    0.0     0.0    0.0
