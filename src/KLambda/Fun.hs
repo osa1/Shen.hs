@@ -13,6 +13,7 @@ import           Control.Monad.IO.Class (liftIO)
 import           Control.Monad.State    (get, gets, modify)
 import qualified Data.ByteString        as BS
 import qualified Data.HashMap.Strict    as M
+import           Data.Maybe             (fromJust)
 import qualified Data.Text              as T
 import           Data.Time.Clock.POSIX  (getPOSIXTime)
 import           Data.Word              (Word8)
@@ -194,6 +195,12 @@ readByte stream = do
     byte <- liftIO $ BS.hGet handle 1
     return . VNum $ if BS.null byte then -1 else fromIntegral (head (BS.unpack byte))
 
+stinput :: KlFun0
+stinput = liftM fromJust $ lookupSym' (Symbol "*stoutput*")
+
+stoutput :: KlFun0
+stoutput = liftM fromJust $ lookupSym' (Symbol "*stoutput*")
+
 open :: KlFun2
 open path dir = do
     path' <- ensureType path
@@ -305,6 +312,8 @@ stdenv = M.fromList
   , ("error-to-string", StdFun errorToString)
   , ("write-byte", StdFun writeByte)
   , ("read-byte", StdFun readByte)
+  , ("stinput", StdFun stinput)
+  , ("stoutput", StdFun stoutput)
   , ("open", StdFun open)
   , ("close", StdFun close)
   , ("=", StdFun eq)
